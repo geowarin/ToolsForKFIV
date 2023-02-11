@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
@@ -9,12 +8,13 @@ namespace ToolsForKFIV.Utility
     public class GLShader
     {
         private int _ProgramHandle;
+
         public int ProgramHandle
         {
             get { return _ProgramHandle; }
             private set { _ProgramHandle = value; }
         }
-        
+
         public GLShader(string vsPath, string fsPath)
         {
             string vsSource, fsSource;
@@ -25,7 +25,8 @@ namespace ToolsForKFIV.Utility
             {
                 vsSource = File.ReadAllText(vsPath);
                 fsSource = File.ReadAllText(fsPath);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(ex.StackTrace);
@@ -39,7 +40,7 @@ namespace ToolsForKFIV.Utility
             GL.CompileShader(vShader);
 
             result = GL.GetShaderInfoLog(vShader);
-            if(result != String.Empty)
+            if (result != String.Empty)
             {
                 Logger.LogError("SHADER ERROR! Vertex shader could not be compiled.");
                 Logger.LogInfo(result);
@@ -77,7 +78,6 @@ namespace ToolsForKFIV.Utility
             GL.DetachShader(ProgramHandle, fShader);
             GL.DeleteShader(vShader);
             GL.DeleteShader(fShader);
-
         }
 
         public void Destroy()
@@ -85,6 +85,7 @@ namespace ToolsForKFIV.Utility
             GL.UseProgram(0);
             GL.DeleteProgram(_ProgramHandle);
         }
+
         public void Bind()
         {
             GL.UseProgram(_ProgramHandle);
@@ -95,6 +96,7 @@ namespace ToolsForKFIV.Utility
             int uniLocation = GL.GetUniformLocation(_ProgramHandle, uniformName);
             GL.UniformMatrix4(uniLocation, transpose, ref mat);
         }
+
         public void SetUniformInt1(string uniformName, int value)
         {
             int uniLocation = GL.GetUniformLocation(_ProgramHandle, uniformName);

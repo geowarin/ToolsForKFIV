@@ -9,11 +9,6 @@ namespace ToolsForKFIV;
 
 public class MainWindow
 {
-    private ToolFFParam controltool_Param = new();
-    private ToolFFImage controltool_Texture = new();
-    private ToolFFModel controltool_Model = new();
-    private ToolFFScene controltool_Scene = new();
-
     public void OpenKfivFile(string path)
     {
         string foundFile = path;
@@ -111,13 +106,7 @@ public class MainWindow
 
     public void OpenTool(Resource resource)
     {
-        // int resourceIndex = (int)fileNode.Tag;
-        //Get File from VFS
         Type resourceType = resource.GetType();
-        // Resource resource = ResourceManager.vfs.GetResource(resourceIndex, out resourceType);
-        
-        
-
         //Get File Buffer
         byte[] fileBuffer;
         string fileExtension = Path.GetExtension(resource.RelativePath);
@@ -195,8 +184,12 @@ public class MainWindow
 
                 if (sceneData != null)
                 {
-                    // mwSplit.Panel2.Controls.Add(controltool_Scene);
                     // controltool_Scene.SetSceneData(sceneData);
+                    using (ToolFFScene game = new ToolFFScene(800, 600, "Scene", sceneData))
+                    {
+                        game.Run();
+                    }
+                    
                 }
                 else
                 {

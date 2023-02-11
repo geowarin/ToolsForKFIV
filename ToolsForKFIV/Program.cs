@@ -106,10 +106,10 @@ namespace ToolsForKFIV
         static void Main()
         {
             ResourceManager.Initialize(AppDomain.CurrentDomain.BaseDirectory);
-            InputManager.Initialize();
+            // InputManager.Initialize();
 
             var mainWindow = new MainWindow();
-            mainWindow.openKFIVTool("/home/geo/Documents/King's Field - The Ancient City/SLUS_203.18");
+            mainWindow.OpenKfivFile("/home/geo/Documents/King's Field - The Ancient City/SLUS_203.18");
         }
     }
 }

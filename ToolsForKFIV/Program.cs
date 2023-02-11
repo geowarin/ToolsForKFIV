@@ -1,10 +1,6 @@
 using System;
-using System.Drawing;
-using System.Windows.Forms;
 using System.IO;
-
 using FormatKFIV.Utility;
-
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -112,10 +108,8 @@ namespace ToolsForKFIV
             ResourceManager.Initialize(AppDomain.CurrentDomain.BaseDirectory);
             InputManager.Initialize();
 
-            Application.SetHighDpiMode(HighDpiMode.SystemAware);
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainWindow());
+            var mainWindow = new MainWindow();
+            mainWindow.openKFIVTool("/home/geo/Documents/King's Field - The Ancient City/SLUS_203.18");
         }
     }
 }

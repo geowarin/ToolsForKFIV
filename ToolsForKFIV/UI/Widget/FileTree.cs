@@ -1,122 +1,90 @@
-﻿using System;
-using System.IO;
-using System.Windows.Forms;
-
-using FormatKFIV.FileFormat;
+﻿using System.IO;
 using FormatKFIV.Utility;
 
-namespace ToolsForKFIV.UI.Control
+namespace ToolsForKFIV.UI.Control;
+
+public class FileTree
 {
-    public partial class FileTree : UserControl
+    /// <summary>Emumurate a virtual file system, to display its contents </summary>
+    public void EnumurateVFS(VirtualFileSystem vfs)
     {
-        public FileTree()
+        Resource[] resources = vfs.GetResources();
+            
+        //Stage I - Directories
+        foreach (Resource resource in resources)
         {
-            InitializeComponent();
-        }
-
-        /// <summary>Emumurate a virtual file system, to display its contents </summary>
-        public void EnumurateVFS(VirtualFileSystem vfs)
-        {
-            Resource[] resources = vfs.GetResources();
-
-            ftTreeView.Nodes.Clear();
-
-            //Stage I - Directories
-            foreach (Resource resource in resources)
+            if(resource.RelativePath.Contains(Path.DirectorySeparatorChar))
             {
-                if(resource.RelativePath.Contains(Path.DirectorySeparatorChar))
-                {
-                    string[] splitPath = resource.RelativePath.Split(Path.DirectorySeparatorChar);
+                string[] splitPath = resource.RelativePath.Split(Path.DirectorySeparatorChar);
 
-                    TreeNode currentNode;
-                    if (!ftTreeView.Nodes.ContainsKey(splitPath[0]))
+                TreeNode currentNode;
+                if (!ftTreeView.Nodes.ContainsKey(splitPath[0]))
+                {
+                    currentNode = ftTreeView.Nodes.Add(splitPath[0]);
+                    currentNode.Name = splitPath[0];
+                    currentNode.ImageIndex = 0;
+                    currentNode.SelectedImageIndex = currentNode.ImageIndex;
+
+                    currentNode.Tag = -1;
+                }
+                else 
+                {
+                    currentNode = ftTreeView.Nodes[ftTreeView.Nodes.IndexOfKey(splitPath[0])];
+                }
+
+                for (int i = 1; i < (splitPath.Length - 1); ++i)
+                {
+                    if(!currentNode.Nodes.ContainsKey(splitPath[i]))
                     {
-                        currentNode = ftTreeView.Nodes.Add(splitPath[0]);
-                        currentNode.Name = splitPath[0];
+                        currentNode = currentNode.Nodes.Add(splitPath[i]);
+                        currentNode.Name = splitPath[i];
                         currentNode.ImageIndex = 0;
                         currentNode.SelectedImageIndex = currentNode.ImageIndex;
 
                         currentNode.Tag = -1;
                     }
-                    else 
-                    {
-                        currentNode = ftTreeView.Nodes[ftTreeView.Nodes.IndexOfKey(splitPath[0])];
-                    }
-
-                    for (int i = 1; i < (splitPath.Length - 1); ++i)
-                    {
-                        if(!currentNode.Nodes.ContainsKey(splitPath[i]))
-                        {
-                            currentNode = currentNode.Nodes.Add(splitPath[i]);
-                            currentNode.Name = splitPath[i];
-                            currentNode.ImageIndex = 0;
-                            currentNode.SelectedImageIndex = currentNode.ImageIndex;
-
-                            currentNode.Tag = -1;
-                        }
-                        else
-                        {
-                            currentNode = currentNode.Nodes[currentNode.Nodes.IndexOfKey(splitPath[i])];
-                        }
-                    }
-                }
-            }
-
-            //Stage II - Files
-            int resourceIndex = 0;
-            foreach (Resource resource in resources)
-            {
-                TreeNode currentNode;
-
-                if (resource.RelativePath.Contains(Path.DirectorySeparatorChar))
-                {
-                    string[] splitPath = resource.RelativePath.Split(Path.DirectorySeparatorChar);
-                    string file = splitPath[splitPath.Length - 1];
-                    currentNode = ftTreeView.Nodes[ftTreeView.Nodes.IndexOfKey(splitPath[0])];
-
-                    //Traverse Tree
-                    for(int i = 1; i < splitPath.Length - 1; ++i)
+                    else
                     {
                         currentNode = currentNode.Nodes[currentNode.Nodes.IndexOfKey(splitPath[i])];
                     }
-
-                    currentNode = currentNode.Nodes.Add(file);
-                    currentNode.Name = file;
-                    currentNode.ImageIndex = 1 + (int)FileTypeIdentifier.IdentifyByExtension(file);
-                    currentNode.SelectedImageIndex = currentNode.ImageIndex;
                 }
-                else
-                {
-                    currentNode = ftTreeView.Nodes.Add(resource.RelativePath);
-                    currentNode.Name = resource.RelativePath;
-                    currentNode.ImageIndex = 1 + (int)FileTypeIdentifier.IdentifyByExtension(resource.RelativePath);
-                    currentNode.SelectedImageIndex = currentNode.ImageIndex;
-                }
-
-                currentNode.Tag = resourceIndex;
-
-                resourceIndex++;
             }
         }
 
-        #region Tree View Input
-        private void ftTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        //Stage II - Files
+        int resourceIndex = 0;
+        foreach (Resource resource in resources)
         {
-            ResourceManager.winMain.OpenTool(e.Node);
-        }
-        private void ftTreeView_KeyDown(object sender, KeyEventArgs e)
-        {
-            e.Handled = true;
-        }
-        private void ftTreeView_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            e.Handled = true;
-        }
-        private void ftTreeView_KeyUp(object sender, KeyEventArgs e)
-        {
-            e.Handled = true;
-        }
+            TreeNode currentNode;
 
-        #endregion
+            if (resource.RelativePath.Contains(Path.DirectorySeparatorChar))
+            {
+                string[] splitPath = resource.RelativePath.Split(Path.DirectorySeparatorChar);
+                string file = splitPath[splitPath.Length - 1];
+                currentNode = ftTreeView.Nodes[ftTreeView.Nodes.IndexOfKey(splitPath[0])];
+
+                //Traverse Tree
+                for(int i = 1; i < splitPath.Length - 1; ++i)
+                {
+                    currentNode = currentNode.Nodes[currentNode.Nodes.IndexOfKey(splitPath[i])];
+                }
+
+                currentNode = currentNode.Nodes.Add(file);
+                currentNode.Name = file;
+                currentNode.ImageIndex = 1 + (int)FileTypeIdentifier.IdentifyByExtension(file);
+                currentNode.SelectedImageIndex = currentNode.ImageIndex;
+            }
+            else
+            {
+                currentNode = ftTreeView.Nodes.Add(resource.RelativePath);
+                currentNode.Name = resource.RelativePath;
+                currentNode.ImageIndex = 1 + (int)FileTypeIdentifier.IdentifyByExtension(resource.RelativePath);
+                currentNode.SelectedImageIndex = currentNode.ImageIndex;
+            }
+
+            currentNode.Tag = resourceIndex;
+
+            resourceIndex++;
+        }
     }
 }

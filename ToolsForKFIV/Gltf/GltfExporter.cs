@@ -33,11 +33,11 @@ public class GltfExporter
         var scene = _sceneData;
 
         var texturesByGuid = new Dictionary<uint, MaterialBuilder>();
-        foreach (Texture tex in scene.texData)
+        foreach (var tex in scene.texData)
         {
-            for (int i = 0; i < tex.SubimageCount; ++i)
+            for (var i = 0; i < tex.SubimageCount; ++i)
             {
-                Texture.ImageBuffer? subImage = tex.GetSubimage(i);
+                var subImage = tex.GetSubimage(i);
                 if (subImage != null)
                 {
                     var rgba = tex.GetSubimageAsRGBA(i);
@@ -74,7 +74,7 @@ public class GltfExporter
             {
                 case 0x01FB:
                 case 0x01FC:
-                    int radius = (obj.classParams[11] << 8) | obj.classParams[10];
+                    var radius = (obj.classParams[11] << 8) | obj.classParams[10];
                     
                     var (position, rotation, scale) = trans;
                     var quaternion = Quaternion.Identity;
@@ -128,17 +128,7 @@ public class GltfExporter
 
         var gltfModel = gltf.ToGltf2();
 
-        // foreach (var light in lights)
-        // {
-        //     var punctualLight = gltfModel
-        //         .CreatePunctualLight(PunctualLightType.Point)
-        //         .WithColor(light.color, 1f, light.radius);
-        //     
-        //     gltfModel.LogicalPunctualLights
-        //     gltfModel.AddLight(punctualLight, light.transform);
-        //     // transform ????
-        // }
-        // gltfModel.SaveGLTF("mesh.gltf");
+        // TODO: lights
         Directory.CreateDirectory("export");
         gltfModel.SaveGLB($"export/{fileName}.glb");
     }

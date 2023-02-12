@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using FormatKFIV.Asset;
 using FormatKFIV.FileFormat;
+using ToolsForKFIV.Gltf;
 using ToolsForKFIV.UI.Control;
 
 namespace ToolsForKFIV;
@@ -184,11 +185,11 @@ public class MainWindow
 
                 if (sceneData != null)
                 {
-                    // controltool_Scene.SetSceneData(sceneData);
-                    using (ToolFFScene game = new ToolFFScene(800, 600, "Scene", sceneData))
-                    {
-                        game.Run();
-                    }
+                    new GltfExporter(sceneData).Export("toto.glb");
+                    // using (ToolFFScene game = new ToolFFScene(800, 600, "Scene", sceneData))
+                    // {
+                    //     game.Run();
+                    // }
                     
                 }
                 else

@@ -20,8 +20,8 @@ public class ToolFFScene : GameWindow
 
     private Vector3 cameraTo = new Vector3(0, 0, 0), cameraFrom = new Vector3(8, 4, 0);
     private float camLookX = 0, camLookY = 0;
+
     private Vector2 mousePosition = new Vector2(0, 0), lastMousePosition = new Vector2(0, 0);
-    // private bool mouseOnWindow = false;
 
     private Matrix4 matView, matProjection;
 
@@ -152,7 +152,7 @@ public class ToolFFScene : GameWindow
         {
             Close();
         }
-        
+
         HandleInputs();
 
         Paint();
@@ -183,8 +183,8 @@ public class ToolFFScene : GameWindow
         myDrawFlags |= SceneDraw.Geometry;
         // myDrawFlags |= SceneDraw.Collision;
         // myDrawFlags |= SceneDraw.RenderAABB;
-        // myDrawFlags |= SceneDraw.PointLight;
-        // myDrawFlags |= SceneDraw.Object;
+        myDrawFlags |= SceneDraw.PointLight;
+        myDrawFlags |= SceneDraw.Object;
 
         scene.Draw(myDrawFlags);
 
@@ -194,64 +194,59 @@ public class ToolFFScene : GameWindow
     private void HandleInputs()
     {
         var mouseState = MouseState;
-        //Most Position Logic
         lastMousePosition.X = mousePosition.X;
         lastMousePosition.Y = mousePosition.Y;
-    
-        if (IsFocused)
-        {
-            mousePosition.X = mouseState.X;
-            mousePosition.Y = mouseState.Y;
-        }
-    
         
-        if (mouseState[MouseButton.Left])
+        if (!IsFocused)
         {
-            //Mouse Input
-            camLookX -= ((lastMousePosition.X - mousePosition.X) * 0.0174533f) / 4f;
-            camLookY -= ((lastMousePosition.Y - mousePosition.Y)) / 4f;
-            camLookY = Math.Clamp(camLookY, -90f, 90f);
-    
-            float f_x = MathF.Sqrt(MathF.Pow(91, 2) - MathF.Pow(camLookY, 2));
-    
-            KeyboardState input = KeyboardState;
-            //Keyboard Input
-            int wKey = input.IsKeyDown(Keys.W) ? 1 : 0;
-            int aKey = input.IsKeyDown(Keys.A) ? 1 : 0;
-            int sKey = input.IsKeyDown(Keys.S) ? 1 : 0;
-            int dKey = input.IsKeyDown(Keys.D) ? 1 : 0;
-            int xAxis = (aKey - dKey);
-            int yAxis = (wKey - sKey);
-    
-            float speed = 64.0f;
-            if(xAxis != 0 && yAxis != 0)
-            {
-                speed = speed * 0.70710678118f;
-            }
-    
-            //Shift for sprint
-            if(input.IsKeyDown(Keys.LeftShift))
-            {
-                speed = speed * 2;
-            }
-    
-            if(yAxis != 0)
-            {
-                cameraFrom.X += ((MathF.Cos(camLookX) * f_x) * 0.0039f) * yAxis * speed;
-                cameraFrom.Z += ((MathF.Sin(camLookX) * f_x) * 0.0039f) * yAxis * speed;
-                cameraFrom.Y += (-(camLookY * 0.0039f)) * yAxis * speed;
-            }
-    
-            if(xAxis != 0)
-            {
-                cameraFrom.X += ((MathF.Cos(camLookX - 1.57079632679f) * f_x) * 0.0039f) * xAxis * speed;
-                cameraFrom.Z += ((MathF.Sin(camLookX - 1.57079632679f) * f_x) * 0.0039f) * xAxis * speed;
-            }
-    
-            //Set Camera To
-            cameraTo.X = cameraFrom.X + (MathF.Cos(camLookX) * f_x);
-            cameraTo.Z = cameraFrom.Z + (MathF.Sin(camLookX) * f_x);
-            cameraTo.Y = cameraFrom.Y - camLookY;
+            return;
         }
+
+        mousePosition.X = mouseState.X;
+        mousePosition.Y = mouseState.Y;
+
+        camLookX -= ((lastMousePosition.X - mousePosition.X) * 0.0174533f) / 4f;
+        camLookY -= ((lastMousePosition.Y - mousePosition.Y)) / 4f;
+        camLookY = Math.Clamp(camLookY, -90f, 90f);
+
+        float f_x = MathF.Sqrt(MathF.Pow(91, 2) - MathF.Pow(camLookY, 2));
+
+        KeyboardState input = KeyboardState;
+        int wKey = input.IsKeyDown(Keys.W) ? 1 : 0;
+        int aKey = input.IsKeyDown(Keys.A) ? 1 : 0;
+        int sKey = input.IsKeyDown(Keys.S) ? 1 : 0;
+        int dKey = input.IsKeyDown(Keys.D) ? 1 : 0;
+        int xAxis = (aKey - dKey);
+        int yAxis = (wKey - sKey);
+
+        float speed = 64.0f;
+        if (xAxis != 0 && yAxis != 0)
+        {
+            speed = speed * 0.70710678118f;
+        }
+
+        //Shift for sprint
+        if (input.IsKeyDown(Keys.LeftShift))
+        {
+            speed = speed * 2;
+        }
+
+        if (yAxis != 0)
+        {
+            cameraFrom.X += ((MathF.Cos(camLookX) * f_x) * 0.0039f) * yAxis * speed;
+            cameraFrom.Z += ((MathF.Sin(camLookX) * f_x) * 0.0039f) * yAxis * speed;
+            cameraFrom.Y += (-(camLookY * 0.0039f)) * yAxis * speed;
+        }
+
+        if (xAxis != 0)
+        {
+            cameraFrom.X += ((MathF.Cos(camLookX - 1.57079632679f) * f_x) * 0.0039f) * xAxis * speed;
+            cameraFrom.Z += ((MathF.Sin(camLookX - 1.57079632679f) * f_x) * 0.0039f) * xAxis * speed;
+        }
+
+        //Set Camera To
+        cameraTo.X = cameraFrom.X + (MathF.Cos(camLookX) * f_x);
+        cameraTo.Z = cameraFrom.Z + (MathF.Sin(camLookX) * f_x);
+        cameraTo.Y = cameraFrom.Y - camLookY;
     }
 }

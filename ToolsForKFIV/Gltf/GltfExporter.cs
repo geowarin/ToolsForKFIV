@@ -26,10 +26,9 @@ public class GltfExporter
         _sceneData = sceneData;
     }
 
-    public void Export(string totoGlb)
+    public void Export(string fileName)
     {
         var scene = _sceneData;
-
 
         var texturesByGuid = new Dictionary<uint, MaterialBuilder>();
         foreach (Texture tex in scene.texData)
@@ -43,6 +42,7 @@ public class GltfExporter
                     var memoryPng = PngFromRgba(subImage.Value, rgba);
 
                     var material = new MaterialBuilder()
+                        .WithDoubleSide(true)
                         .WithChannelImage(KnownChannel.BaseColor, memoryPng);
 
                     texturesByGuid[subImage.Value.UID] = material;
@@ -63,15 +63,15 @@ public class GltfExporter
                 var rotation = new Vector3(chunk.rotation.X, chunk.rotation.Y, chunk.rotation.Z);
                 var scale = new Vector3(chunk.scale.X, chunk.scale.Y, chunk.scale.Z);
 
-                Console.Out.WriteLine($"position={position},rotation={rotation},scale = {scale}");
-                // Matrix4x4Factory.CreateFrom()
-                // var Name = $"GeoDrawChunk ({chunk.drawModelID.ToString("D4")})";
-
-
+                // var quaternion = Quaternion.CreateFromYawPitchRoll(rotation.X, rotation.Y, rotation.Z);
+                var quaternion = Quaternion.Identity;
+                var transform = new AffineTransform(scale, quaternion, position);
+                // Console.Out.WriteLine($"position={position},rotation={rotation},scale = {scale} => {transform.Matrix}");
+                
                 foreach (Model.Mesh mesh in model.Meshes)
                 {
                     var meshBuilder = MeshBuilder(model, mesh, texturesByGuid);
-                    gltf.AddRigidMesh(meshBuilder, Matrix4x4.Identity);
+                    gltf.AddRigidMesh(meshBuilder, transform);
                 }
 
                 gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
@@ -81,7 +81,7 @@ public class GltfExporter
         var gltfModel = gltf.ToGltf2();
         // gltfModel.SaveGLTF("mesh.gltf");
         Directory.CreateDirectory("export");
-        gltfModel.SaveGLB("export/map.glb");
+        gltfModel.SaveGLB($"export/{fileName}.glb");
     }
 
     private byte[] PngFromRgba(Texture.ImageBuffer image, byte[] data)

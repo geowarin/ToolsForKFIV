@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FormatKFIV.Asset;
 using FormatKFIV.FileFormat;
+using ToolsForKFIV.Asset;
 using ToolsForKFIV.Gltf;
 using ToolsForKFIV.UI.Control;
 
@@ -10,7 +12,7 @@ namespace ToolsForKFIV;
 
 public class MainWindow
 {
-    public void OpenKfivFile(string path)
+    public static IEnumerable<Resource> OpenKFivFile(string path)
     {
         string foundFile = path;
         string foundPath = Path.GetDirectoryName(foundFile);
@@ -77,7 +79,7 @@ public class MainWindow
         {
             Logger.LogError("Invalid KF4 Data! Did you try to trick the system by renaming something?");
             Logger.LogError($"{foundFile}");
-            return;
+            return Array.Empty<Resource>();
         }
 
         Logger.LogInfo($"Loading KFIV Data (region: {kf4Region}, exe: {foundFile})");
@@ -95,156 +97,76 @@ public class MainWindow
             }
         }
 
-        var resources = ResourceManager.vfs.GetResources();
-        var map = resources.First(r => r.RelativePath == "DATA/KF4.DAT/005.map");
-        OpenTool(map);
-        // foreach (var resource in resources)
-        // {
-        //     Console.Out.WriteLine(resource.RelativePath);
-        // }
-        // new FileTree().EnumurateVFS(ResourceManager.vfs);
+        return ResourceManager.vfs.GetResources();
     }
 
-    public void OpenTool(Resource resource)
+    private static byte[] GetBuffer(Resource resource)
     {
         Type resourceType = resource.GetType();
-        //Get File Buffer
-        byte[] fileBuffer;
-        string fileExtension = Path.GetExtension(resource.RelativePath);
-
         switch (resource)
         {
             case VirtualResource vres:
                 Logger.LogInfo("Opened file is VIRTUAL type!");
-
-                fileBuffer = vres.Buffer;
-                break;
+                return vres.Buffer;
 
             case SystemResource sres:
+                byte[] fileBuffer;
                 Logger.LogInfo("Opened file is SYSTEM type!");
 
                 if (!sres.GetBuffer(out fileBuffer))
                 {
-                    Logger.LogError("Failed to aquire system file buffer!!!");
-                    return;
+                    throw new Exception("Failed to aquire system file buffer!!!");
                 }
 
-                break;
+                return fileBuffer;
 
             default:
-                Logger.LogError($"An invalid object is inside the VFS ({resourceType.Name}), WTF?");
-                return;
+                throw new Exception($"An invalid object is inside the VFS ({resourceType.Name}), WTF?");
         }
+    }
 
-        //Try to find a format handler, and the format type.
-        object formatHandler;
-        FEType formatType;
+    public static AssetType OpenResource(Resource resource)
+    {
+        var fileExtension = Path.GetExtension(resource.RelativePath);
+        var fileBuffer = GetBuffer(resource);
 
-        if (!ResourceManager.FormatIsSupported(fileExtension, fileBuffer, out formatType, out formatHandler))
+        if (!ResourceManager.FormatIsSupported(fileExtension, fileBuffer, out var formatType, out var formatHandler))
         {
-            Logger.LogWarn($"Unable to find format handler for file! (file: {resource.RelativePath})");
-            return;
+            throw new Exception($"Unable to find format handler for file! (file: {resource.RelativePath})");
         }
 
-        //Open the required tool for the selected file.
         switch (formatType)
         {
             default:
             case FEType.None:
-                Logger.LogError("Invalid file type!");
-                break;
+                throw new Exception("Invalid file type!");
 
-            //FormatType = Parameters
             case FEType.Param:
-                Logger.LogInfo("Attempting to cast generic format handler to a parameter format handler...");
-                FIFormat<Param> paramHandler = (FIFormat<Param>)formatHandler;
-
                 Logger.LogInfo("Attempting to import parameters...");
-                Param paramData = paramHandler.LoadFromMemory(fileBuffer, out _, out _, out _);
 
-                if (paramData != null)
-                {
-                    // mwSplit.Panel2.Controls.Add(controltool_Param);
-                    // controltool_Param.SetParamData(paramData);
-                }
-                else
-                {
-                    Logger.LogError("Param Data is NULL!");
-                    return;
-                }
+                FIFormat<Param> paramHandler = (FIFormat<Param>)formatHandler;
+                return new ParamAsset(paramHandler.LoadFromMemory(fileBuffer, out _, out _, out _));
 
-                break;
-
-            //FormatType == Scene
             case FEType.Scene:
-                Logger.LogInfo("Attempting to cast generic format handler to a scene format handler...");
-                FIFormat<Scene> sceneHandler = (FIFormat<Scene>)formatHandler;
-
                 Logger.LogInfo("Attempting to import scene...");
-                Scene sceneData = sceneHandler.LoadFromMemory(fileBuffer, out _, out _, out _);
 
-                if (sceneData != null)
-                {
-                    new GltfExporter(sceneData).Export("toto.glb");
-                    // using (ToolFFScene game = new ToolFFScene(800, 600, "Scene", sceneData))
-                    // {
-                    //     game.Run();
-                    // }
-                    
-                }
-                else
-                {
-                    Logger.LogError("Scene Data is NULL!");
-                    return;
-                }
+                FIFormat<Scene> sceneHandler = (FIFormat<Scene>)formatHandler;
+                return new SceneAsset(sceneHandler.LoadFromMemory(fileBuffer, out _, out _, out _));
 
-                break;
-
-            //FormatType == Texture
             case FEType.Texture:
-                Logger.LogInfo("Attempting to cast generic format handler to a texture format handler...");
-                FIFormat<Texture> textureHandler = (FIFormat<Texture>)formatHandler;
-
                 Logger.LogInfo("Attempting to import texture...");
-                Texture textureData = textureHandler.LoadFromMemory(fileBuffer, out _, out _, out _);
 
-                if (textureData != null)
-                {
-                    // mwSplit.Panel2.Controls.Add(controltool_Texture);
-                    // controltool_Texture.SetTextureData(textureData);
-                }
-                else
-                {
-                    Logger.LogError("Texture Data is NULL!");
-                    return;
-                }
+                FIFormat<Texture> textureHandler = (FIFormat<Texture>)formatHandler;
+                return new TextureAsset(textureHandler.LoadFromMemory(fileBuffer, out _, out _, out _));
 
-                break;
-
-            //FormatType == Model
             case FEType.Model:
-                Logger.LogInfo("Attempting to cast generic format handler to a model format handler...");
+                Logger.LogInfo("Attempting to import model...");
                 FIFormat<Model> modelHandler = (FIFormat<Model>)formatHandler;
 
-                Logger.LogInfo("Attempting to import model...");
-                object modelTextureData = null;
-
-                Model modelData = modelHandler.LoadFromMemory(fileBuffer, out modelTextureData, out _, out _);
-
-                if (modelData != null)
-                {
-                    // mwSplit.Panel2.Controls.Add(controltool_Model);
-                    // controltool_Model.SetModelFile(modelData, (Texture)modelTextureData);
-                }
-                else
-                {
-                    Logger.LogError("Model Data is NULL!");
-                    return;
-                }
-
-                break;
+                return new ModelAsset(
+                    modelHandler.LoadFromMemory(fileBuffer, out _, out _, out _),
+                    (Texture)modelHandler
+                );
         }
-
-        Logger.LogInfo("Import Complete!");
     }
 }

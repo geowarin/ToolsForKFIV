@@ -1,6 +1,10 @@
 using System;
 using System.IO;
+using System.Linq;
+using FormatKFIV.Asset;
 using FormatKFIV.Utility;
+using ToolsForKFIV.Asset;
+using ToolsForKFIV.UI.Control;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -106,10 +110,20 @@ namespace ToolsForKFIV
         static void Main()
         {
             ResourceManager.Initialize(AppDomain.CurrentDomain.BaseDirectory);
-            // InputManager.Initialize();
+            var resources = MainWindow.OpenKFivFile("/home/geo/Documents/King's Field - The Ancient City/SLUS_203.18");
+            var map = resources.ToArray().First(r => r.RelativePath == "DATA/KF4.DAT/002.map");
+            var asset = MainWindow.OpenResource(map);
 
-            var mainWindow = new MainWindow();
-            mainWindow.OpenKfivFile("/home/geo/Documents/King's Field - The Ancient City/SLUS_203.18");
+            if (asset is SceneAsset sceneAsset)
+            {
+                // var fileName = Path.GetFileName(resource.RelativePath);
+                // new GltfExporter(sceneData).Export(fileName);
+                using (ToolFFScene scene = new ToolFFScene(800, 600, "Scene", sceneAsset.Scene))
+                {
+                    scene.Run();
+                }
+            }
+
         }
     }
 }

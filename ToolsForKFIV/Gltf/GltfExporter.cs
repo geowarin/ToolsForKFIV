@@ -4,17 +4,18 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using FormatKFIV.Asset;
-using FormatKFIV.FileFormat;
 using FormatKFIV.Utility;
 using SharpGLTF.Geometry;
 using SharpGLTF.Geometry.VertexTypes;
 using SharpGLTF.Materials;
-using SharpGLTF.Memory;
 using SharpGLTF.Scenes;
+using SharpGLTF.Schema2;
 using SharpGLTF.Transforms;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using ToolsForKFIV.Utility;
+using Image = SixLabors.ImageSharp.Image;
+using Scene = FormatKFIV.Asset.Scene;
+using Texture = FormatKFIV.Asset.Texture;
 
 namespace ToolsForKFIV.Gltf;
 
@@ -63,8 +64,60 @@ public class GltfExporter
                 gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
             }
         }
-        
-        foreach(var item in scene.items)
+
+        var lights = new List<(AffineTransform transform, float radius, Vector3 color)>();  
+        foreach (var obj in scene.objects)
+        {
+            var trans = (obj.position, obj.rotation, obj.scale);
+            
+            switch (obj.classID)
+            {
+                case 0x01FB:
+                case 0x01FC:
+                    int radius = (obj.classParams[11] << 8) | obj.classParams[10];
+                    
+                    var (position, rotation, scale) = trans;
+                    var quaternion = Quaternion.Identity;
+                    var transform = new AffineTransform(scale.ToVector3(), quaternion, position.ToVector3());
+
+                    var color = new Vector3(obj.classParams[4], obj.classParams[6], obj.classParams[8]);
+
+                    lights.Add((transform, radius, color));
+                    
+                    break;
+
+                //Until we find exactly what value in the object struct decides if the object uses a OM2 model, this is  the best way.
+                case 0x001A:
+                case 0x0020:
+                case 0x0041:
+                case 0x0044:
+                case 0x0045:
+                case 0x0046:
+                    if (obj.drawModelID >= 0)
+                    {
+                        var model = scene.om2Data[obj.drawModelID];
+                        MakeScene(trans, model, texturesByGuid);
+                        var sceneBuilder = MakeScene(trans, model, texturesByGuid);
+                        gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
+                    }
+
+                    break;
+
+                default:
+                    if (obj.drawModelID >= 0)
+                    {
+                        var model = scene.omdData[obj.drawModelID];
+                        MakeScene(trans, model, texturesByGuid);
+                        var sceneBuilder = MakeScene(trans, model, texturesByGuid);
+                        gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
+                    }
+
+                    break;
+            }
+        }
+
+
+        foreach (var item in scene.items)
         {
             var model = scene.omdData[item.omdID];
             var trans = (item.position, item.rotation, item.scale);
@@ -74,6 +127,17 @@ public class GltfExporter
         }
 
         var gltfModel = gltf.ToGltf2();
+
+        // foreach (var light in lights)
+        // {
+        //     var punctualLight = gltfModel
+        //         .CreatePunctualLight(PunctualLightType.Point)
+        //         .WithColor(light.color, 1f, light.radius);
+        //     
+        //     gltfModel.LogicalPunctualLights
+        //     gltfModel.AddLight(punctualLight, light.transform);
+        //     // transform ????
+        // }
         // gltfModel.SaveGLTF("mesh.gltf");
         Directory.CreateDirectory("export");
         gltfModel.SaveGLB($"export/{fileName}.glb");
@@ -172,11 +236,9 @@ public class GltfExporter
 
         return meshBuilder;
     }
-
-    
 }
 
 static class Ext
 {
-    public static Vector3 ToVector3(this Vector3f v) => new Vector3(v.X, v.Y, v.Z);
+    public static Vector3 ToVector3(this Vector3f v) => new(v.X, v.Y, v.Z);
 }

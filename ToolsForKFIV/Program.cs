@@ -100,27 +100,37 @@ namespace ToolsForKFIV
         }
     }
 
-    /// <summary>Program Entry Point</summary>
     static class Program
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
-        [STAThread]
         static void Main()
         {
             ResourceManager.Initialize(AppDomain.CurrentDomain.BaseDirectory);
-            var resources = MainWindow.OpenKFivFile("/home/geo/Documents/King's Field - The Ancient City/SLUS_203.18");
-            var map = resources.ToArray().First(r => r.RelativePath == "DATA/KF4.DAT/002.map");
-            var asset = MainWindow.OpenResource(map);
+            var resources = ResourceLoader.OpenKFivFile("/home/geo/Documents/King's Field - The Ancient City/SLUS_203.18");
 
-            if (asset is SceneAsset sceneAsset)
+            // foreach (var resource in resources)
+            // {
+            //     Console.Out.WriteLine("resource = {0}", resource.RelativePath);
+            // }
+            
+            // var resource = resources.ToArray().First(r => r.RelativePath == "DATA/KF4.DAT/002.map");
+            var resource = resources.ToArray().First(r => r.RelativePath == "DATA/KF4.DAT/chr/c0133.chr");
+            var asset = ResourceLoader.OpenResource(resource);
+            
+            switch (asset)
             {
-                // var fileName = Path.GetFileName(resource.RelativePath);
-                // new GltfExporter(sceneData).Export(fileName);
-                using (ToolFFScene scene = new ToolFFScene(800, 600, "Scene", sceneAsset.Scene))
+                case SceneAsset sceneAsset:
                 {
+                    // var fileName = Path.GetFileName(resource.RelativePath);
+                    // new GltfExporter(sceneData).Export(fileName);
+                    using var scene = new ToolFFScene(800, 600, "Scene", sceneAsset.Scene);
                     scene.Run();
+                    break;
+                }
+                case ModelAsset modelAsset:
+                {
+                    using var model = new ToolFFModel(800, 600, "Model", modelAsset);
+                    model.Run();
+                    break;
                 }
             }
 

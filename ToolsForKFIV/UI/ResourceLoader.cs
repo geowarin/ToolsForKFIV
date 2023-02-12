@@ -10,12 +10,11 @@ using ToolsForKFIV.UI.Control;
 
 namespace ToolsForKFIV;
 
-public class MainWindow
+public class ResourceLoader
 {
     public static IEnumerable<Resource> OpenKFivFile(string path)
     {
-        string foundFile = path;
-        string foundPath = Path.GetDirectoryName(foundFile);
+        string foundPath = Path.GetDirectoryName(path);
 
         ResourceManager.vfs.Reset();
         ResourceManager.vfs.SetRoot(foundPath + Path.DirectorySeparatorChar);
@@ -43,7 +42,7 @@ public class MainWindow
         string[] kf4DatFiles;
         string kf4Region = "None";
 
-        switch (Path.GetFileName(foundFile))
+        switch (Path.GetFileName(path))
         {
             case "SLUS_203.18":
             case "SLUS_203.53":
@@ -78,11 +77,11 @@ public class MainWindow
         if (kf4Region == "None")
         {
             Logger.LogError("Invalid KF4 Data! Did you try to trick the system by renaming something?");
-            Logger.LogError($"{foundFile}");
+            Logger.LogError($"{path}");
             return Array.Empty<Resource>();
         }
 
-        Logger.LogInfo($"Loading KFIV Data (region: {kf4Region}, exe: {foundFile})");
+        Logger.LogInfo($"Loading KFIV Data (region: {kf4Region}, exe: {path})");
 
         //Scan KF File System
         FFResourceDAT dataDat;
@@ -164,8 +163,8 @@ public class MainWindow
                 FIFormat<Model> modelHandler = (FIFormat<Model>)formatHandler;
 
                 return new ModelAsset(
-                    modelHandler.LoadFromMemory(fileBuffer, out _, out _, out _),
-                    (Texture)modelHandler
+                    modelHandler.LoadFromMemory(fileBuffer, out var modelTextureData, out _, out _),
+                    (Texture)modelTextureData
                 );
         }
     }

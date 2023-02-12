@@ -31,7 +31,7 @@ namespace ToolsForKFIV
         public static string ProgramDirectory;
 
         /// <summary>Reference to the main window</summary>
-        public static MainWindow winMain;
+        public static ResourceLoader winMain;
 
         /// <summary>Initializes the resource manager. Must be called before any other call to it.</summary>
         /// <param name="programDir">Directory of the exe file.</param>

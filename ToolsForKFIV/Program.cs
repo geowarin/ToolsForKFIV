@@ -4,6 +4,7 @@ using System.Linq;
 using FormatKFIV.Asset;
 using FormatKFIV.Utility;
 using ToolsForKFIV.Asset;
+using ToolsForKFIV.Gltf;
 using ToolsForKFIV.UI.Control;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -112,10 +113,16 @@ namespace ToolsForKFIV
             //     Console.Out.WriteLine("resource = {0}", resource.RelativePath);
             // }
             
-            // var resource = resources.ToArray().First(r => r.RelativePath == "DATA/KF4.DAT/002.map");
-            var resource = resources.ToArray().First(r => r.RelativePath == "DATA/KF4.DAT/chr/c0133.chr");
+            var resource = resources.ToArray().First(r => r.RelativePath == "DATA/KF4.DAT/005.map");
+            // var resource = resources.ToArray().First(r => r.RelativePath == "DATA/KF4.DAT/chr/c0133.chr");
             var asset = ResourceLoader.OpenResource(resource);
             
+            // View(asset);
+            Export(asset);
+        }
+
+        private static void View(AssetType asset)
+        {
             switch (asset)
             {
                 case SceneAsset sceneAsset:
@@ -133,7 +140,22 @@ namespace ToolsForKFIV
                     break;
                 }
             }
-
+        }
+        private static void Export(AssetType asset)
+        {
+            switch (asset)
+            {
+                case SceneAsset sceneAsset:
+                {
+                    var fileName = Path.GetFileName(asset.RelativePath);
+                    new GltfExporter(sceneAsset.Scene).Export(fileName);
+                    break;
+                }
+                case ModelAsset modelAsset:
+                {
+                    break;
+                }
+            }
         }
     }
 }

@@ -126,12 +126,13 @@ public class ResourceLoader
 
     public static AssetType OpenResource(Resource resource)
     {
-        var fileExtension = Path.GetExtension(resource.RelativePath);
+        var relativePath = resource.RelativePath;
+        var fileExtension = Path.GetExtension(relativePath);
         var fileBuffer = GetBuffer(resource);
 
         if (!ResourceManager.FormatIsSupported(fileExtension, fileBuffer, out var formatType, out var formatHandler))
         {
-            throw new Exception($"Unable to find format handler for file! (file: {resource.RelativePath})");
+            throw new Exception($"Unable to find format handler for file! (file: {relativePath})");
         }
 
         switch (formatType)
@@ -144,25 +145,26 @@ public class ResourceLoader
                 Logger.LogInfo("Attempting to import parameters...");
 
                 FIFormat<Param> paramHandler = (FIFormat<Param>)formatHandler;
-                return new ParamAsset(paramHandler.LoadFromMemory(fileBuffer, out _, out _, out _));
+                return new ParamAsset(relativePath, paramHandler.LoadFromMemory(fileBuffer, out _, out _, out _));
 
             case FEType.Scene:
                 Logger.LogInfo("Attempting to import scene...");
 
                 FIFormat<Scene> sceneHandler = (FIFormat<Scene>)formatHandler;
-                return new SceneAsset(sceneHandler.LoadFromMemory(fileBuffer, out _, out _, out _));
+                return new SceneAsset(relativePath, sceneHandler.LoadFromMemory(fileBuffer, out _, out _, out _));
 
             case FEType.Texture:
                 Logger.LogInfo("Attempting to import texture...");
 
                 FIFormat<Texture> textureHandler = (FIFormat<Texture>)formatHandler;
-                return new TextureAsset(textureHandler.LoadFromMemory(fileBuffer, out _, out _, out _));
+                return new TextureAsset(relativePath, textureHandler.LoadFromMemory(fileBuffer, out _, out _, out _));
 
             case FEType.Model:
                 Logger.LogInfo("Attempting to import model...");
                 FIFormat<Model> modelHandler = (FIFormat<Model>)formatHandler;
 
                 return new ModelAsset(
+                    relativePath, 
                     modelHandler.LoadFromMemory(fileBuffer, out var modelTextureData, out _, out _),
                     (Texture)modelTextureData
                 );

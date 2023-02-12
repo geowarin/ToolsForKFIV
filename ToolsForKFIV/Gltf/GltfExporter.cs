@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using FormatKFIV.Asset;
 using FormatKFIV.FileFormat;
+using FormatKFIV.Utility;
 using SharpGLTF.Geometry;
 using SharpGLTF.Geometry.VertexTypes;
 using SharpGLTF.Materials;
@@ -52,36 +53,48 @@ public class GltfExporter
 
         var gltf = new SceneBuilder();
 
-        foreach (Scene.Chunk chunk in scene.chunks)
+        foreach (var chunk in scene.chunks)
         {
-            var sceneBuilder = new SceneBuilder();
-            //Construct draw geometry
             if (chunk.drawModelID >= 0)
             {
                 var model = scene.omdData[chunk.drawModelID];
-                var position = new Vector3(chunk.position.X, chunk.position.Y, chunk.position.Z);
-                var rotation = new Vector3(chunk.rotation.X, chunk.rotation.Y, chunk.rotation.Z);
-                var scale = new Vector3(chunk.scale.X, chunk.scale.Y, chunk.scale.Z);
-
-                // var quaternion = Quaternion.CreateFromYawPitchRoll(rotation.X, rotation.Y, rotation.Z);
-                var quaternion = Quaternion.Identity;
-                var transform = new AffineTransform(scale, quaternion, position);
-                // Console.Out.WriteLine($"position={position},rotation={rotation},scale = {scale} => {transform.Matrix}");
-                
-                foreach (Model.Mesh mesh in model.Meshes)
-                {
-                    var meshBuilder = MeshBuilder(model, mesh, texturesByGuid);
-                    gltf.AddRigidMesh(meshBuilder, transform);
-                }
-
+                var trans = (chunk.position, chunk.rotation, chunk.scale);
+                var sceneBuilder = MakeScene(trans, model, texturesByGuid);
                 gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
             }
+        }
+        
+        foreach(var item in scene.items)
+        {
+            var model = scene.omdData[item.omdID];
+            var trans = (item.position, item.rotation, item.scale);
+
+            var sceneBuilder = MakeScene(trans, model, texturesByGuid);
+            gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
         }
 
         var gltfModel = gltf.ToGltf2();
         // gltfModel.SaveGLTF("mesh.gltf");
         Directory.CreateDirectory("export");
         gltfModel.SaveGLB($"export/{fileName}.glb");
+    }
+
+    private static SceneBuilder MakeScene((Vector3f position, Vector3f rotation, Vector3f scale) trans, Model model,
+        Dictionary<uint, MaterialBuilder> texturesByGuid)
+    {
+        var (position, rotation, scale) = trans;
+        var sceneBuilder = new SceneBuilder();
+        // var quaternion = Quaternion.CreateFromYawPitchRoll(rotation.X, rotation.Y, rotation.Z);
+        var quaternion = Quaternion.Identity;
+        var transform = new AffineTransform(scale.ToVector3(), quaternion, position.ToVector3());
+
+        foreach (Model.Mesh mesh in model.Meshes)
+        {
+            var meshBuilder = MeshBuilder(model, mesh, texturesByGuid);
+            sceneBuilder.AddRigidMesh(meshBuilder, transform);
+        }
+
+        return sceneBuilder;
     }
 
     private byte[] PngFromRgba(Texture.ImageBuffer image, byte[] data)
@@ -114,40 +127,56 @@ public class GltfExporter
         var meshBuilder = new MeshBuilder<VertexPositionNormal, VertexColor1Texture1>("mesh");
         foreach (var meshPrimitive in mesh.primitives)
         {
-            if (meshPrimitive is Model.TrianglePrimitive p)
+            switch (meshPrimitive)
             {
-                var vertexBuilders =
-                    Enumerable.Range(0, 3)
-                        .Select(i =>
-                        {
-                            var vertex = model.Vertices[p.Indices[0 + i]];
-                            var normal = model.Normals[p.Indices[3 + i]];
-                            var uv = model.Texcoords[p.Indices[6 + i]];
-                            var color = model.Colours[p.Indices[9 + i]];
+                case Model.TrianglePrimitive mp:
+                {
+                    var vertexBuilders =
+                        Enumerable.Range(0, 3)
+                            .Select(i =>
+                            {
+                                var vertex = model.Vertices[mp.Indices[0 + i]];
+                                var normal = model.Normals[mp.Indices[3 + i]];
+                                var uv = model.Texcoords[mp.Indices[6 + i]];
+                                var color = model.Colours[mp.Indices[9 + i]];
 
-                            var vertexBuilder =
-                                new VertexBuilder<VertexPositionNormal, VertexColor1Texture1, VertexEmpty>();
+                                var vertexBuilder =
+                                    new VertexBuilder<VertexPositionNormal, VertexColor1Texture1, VertexEmpty>
+                                    {
+                                        Geometry = new VertexPositionNormal(
+                                            vertex.X, vertex.Y, vertex.Z,
+                                            normal.X, normal.Y, normal.Z
+                                        ),
+                                        Material = new VertexColor1Texture1(
+                                            new Vector4(color.R, color.G, color.B, color.A),
+                                            new Vector2(uv.U, uv.V)
+                                        )
+                                    };
 
-                            vertexBuilder.Geometry = new VertexPositionNormal(
-                                vertex.X, vertex.Y, vertex.Z,
-                                normal.X, normal.Y, normal.Z
-                            );
-                            vertexBuilder.Material = new VertexColor1Texture1(
-                                new Vector4(color.R, color.G, color.B, color.A),
-                                new Vector2(uv.U, uv.V)
-                            );
-                            return vertexBuilder;
-                        }).ToArray();
+                                return vertexBuilder;
+                            }).ToArray();
 
-                var prim = meshBuilder.UsePrimitive(material);
-                prim.AddTriangle(
-                    vertexBuilders[0],
-                    vertexBuilders[1],
-                    vertexBuilders[2]
-                );
+                    var prim = meshBuilder.UsePrimitive(material);
+                    prim.AddTriangle(
+                        vertexBuilders[0],
+                        vertexBuilders[1],
+                        vertexBuilders[2]
+                    );
+                    break;
+                }
+                case Model.LinePrimitive lp:
+                    Console.Out.WriteLine("line");
+                    break;
             }
         }
 
         return meshBuilder;
     }
+
+    
+}
+
+static class Ext
+{
+    public static Vector3 ToVector3(this Vector3f v) => new Vector3(v.X, v.Y, v.Z);
 }

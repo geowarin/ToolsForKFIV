@@ -45,7 +45,8 @@ public class GltfExporter
 
                     var material = new MaterialBuilder()
                         .WithDoubleSide(true)
-                        .WithChannelImage(KnownChannel.BaseColor, memoryPng);
+                        .WithChannelImage(KnownChannel.BaseColor, memoryPng)
+                        ;
 
                     texturesByGuid[subImage.Value.UID] = material;
                 }
@@ -65,7 +66,6 @@ public class GltfExporter
             }
         }
 
-        var lights = new List<(AffineTransform transform, float radius, Vector3 color)>();  
         foreach (var obj in scene.objects)
         {
             var trans = (obj.position, obj.rotation, obj.scale);
@@ -82,8 +82,13 @@ public class GltfExporter
 
                     var color = new Vector3(obj.classParams[4], obj.classParams[6], obj.classParams[8]);
 
-                    lights.Add((transform, radius, color));
-                    
+                    var point = new LightBuilder.Point()
+                    {
+                        Range = radius,
+                        Color = color
+                    };
+                    gltf.AddLight(point, transform);
+
                     break;
 
                 //Until we find exactly what value in the object struct decides if the object uses a OM2 model, this is  the best way.
@@ -128,7 +133,6 @@ public class GltfExporter
 
         var gltfModel = gltf.ToGltf2();
 
-        // TODO: lights
         Directory.CreateDirectory("export");
         gltfModel.SaveGLB($"export/{fileName}.glb");
     }

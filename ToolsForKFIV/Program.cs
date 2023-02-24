@@ -113,12 +113,19 @@ namespace ToolsForKFIV
             //     Console.Out.WriteLine("resource = {0}", resource.RelativePath);
             // }
             
-            var resource = resources.ToArray().First(r => r.RelativePath == "DATA/KF4.DAT/005.map");
+            var resource = resources.ToArray().First(r => r.RelativePath == "DATA/KF4.DAT/000.map");
             // var resource = resources.ToArray().First(r => r.RelativePath == "DATA/KF4.DAT/chr/c0133.chr");
-            var asset = ResourceLoader.OpenResource(resource);
+
+            // foreach (var map in resources
+            //              .Where(r => r.RelativePath.EndsWith(".map")))
+            // {
+            //     var asset = ResourceLoader.OpenResource(map);
+            //     Export(asset);
+            // }
             
-            // View(asset);
+            var asset = ResourceLoader.OpenResource(resource);
             Export(asset);
+            // View(asset);
         }
 
         private static void View(AssetType asset)

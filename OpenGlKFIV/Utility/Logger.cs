@@ -1,9 +1,6 @@
 using System;
-using System.IO;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
-namespace ToolsForKFIV;
+namespace OpenGlKFIV.Utility;
 
 public class Logger
 {

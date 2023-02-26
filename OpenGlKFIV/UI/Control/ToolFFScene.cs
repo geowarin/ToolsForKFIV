@@ -1,15 +1,14 @@
 ﻿using System;
 using FormatKFIV.Asset;
+using OpenGlKFIV.Rendering;
+using OpenGlKFIV.Utility;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using ToolsForKFIV.Rendering;
-using ToolsForKFIV.Utility;
-using YamlDotNet.Core.Tokens;
 
-namespace ToolsForKFIV.UI.Control;
+namespace OpenGlKFIV.UI.Control;
 
 public class ToolFFScene : GameWindow
 {

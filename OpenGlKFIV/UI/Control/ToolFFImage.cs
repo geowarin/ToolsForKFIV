@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using FormatKFIV.Asset;
 using FormatKFIV.FileFormat;
 
-namespace ToolsForKFIV.UI.Control;
+namespace OpenGlKFIV.UI.Control;
 
 public class ToolFFImage
 {

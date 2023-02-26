@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using FormatKFIV.Asset;
 using FormatKFIV.FileFormat;
+using OpenGlKFIV.Utility;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using ToolsForKFIV;
 using ToolsForKFIV.Asset;
-using ToolsForKFIV.Utility;
 
-namespace ToolsForKFIV.UI.Control;
+namespace OpenGlKFIV.UI.Control;
 
 public class ToolFFModel : GameWindow
 {

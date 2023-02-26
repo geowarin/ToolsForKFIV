@@ -1,7 +1,6 @@
-﻿using System;
-using FormatKFIV.Asset;
+﻿using FormatKFIV.Asset;
 
-namespace ToolsForKFIV.UI.Control;
+namespace OpenGlKFIV.UI.Control;
 
 public class ToolFFParam
 {

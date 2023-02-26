@@ -1,6 +1,6 @@
 using FormatKFIV.Utility;
 
-namespace ToolsForKFIV;
+namespace OpenGlKFIV;
 
 public class Settings
 {

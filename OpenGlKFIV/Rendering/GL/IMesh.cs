@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace ToolsForKFIV.Rendering
-{
-    public interface IMesh : IDisposable
-    {
-        int VBO { get; }
-        int VAO { get; }
+namespace OpenGlKFIV.Rendering.GL;
 
-        void Draw();
-    }
+public interface IMesh : IDisposable
+{
+    int VBO { get; }
+    int VAO { get; }
+
+    void Draw();
 }

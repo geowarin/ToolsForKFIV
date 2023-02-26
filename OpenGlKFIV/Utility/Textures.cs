@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ToolsForKFIV.Utility;
+namespace OpenGlKFIV.Utility;
 
 public class Textures
 {

@@ -4,7 +4,7 @@ namespace ResourceKFIV;
 
 public class Resources
 {
-    private IEnumerable<Resource>? _resources;
+    private IEnumerable<Resource> _resources;
 
     public Resources()
     {

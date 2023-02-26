@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleKFIV", "ConsoleKFIV\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourceKFIV", "ResourceKFIV\ResourceKFIV.csproj", "{7BDA2E48-8B3C-49C9-9822-4F977D0B3488}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourcesKFIVTests", "tests\ResourcesKFIVTests\ResourcesKFIVTests.csproj", "{7992FA08-051E-413E-B364-D0020F9DC7F0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{6A82C60C-D991-455E-818D-33D336E5E848}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,11 +43,18 @@ Global
 		{7BDA2E48-8B3C-49C9-9822-4F977D0B3488}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BDA2E48-8B3C-49C9-9822-4F977D0B3488}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BDA2E48-8B3C-49C9-9822-4F977D0B3488}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7992FA08-051E-413E-B364-D0020F9DC7F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7992FA08-051E-413E-B364-D0020F9DC7F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7992FA08-051E-413E-B364-D0020F9DC7F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7992FA08-051E-413E-B364-D0020F9DC7F0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FDC0E26C-A075-49E8-B4F9-9EF4CDC0216C}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7992FA08-051E-413E-B364-D0020F9DC7F0} = {6A82C60C-D991-455E-818D-33D336E5E848}
 	EndGlobalSection
 EndGlobal

@@ -32,10 +32,9 @@
         /// <summary>Puts a resource into the virtual file system</summary>
         /// <param name="resource">A virtual or system resource</param>
         /// <returns>Returns true on success, false otherwise</returns>
-        public bool PutResource(Resource resource)
+        public void PutResource(Resource resource)
         {
             resources.Add(resource);
-            return true;
         }
 
         public void SetRoot(string rootpath)

@@ -1,4 +1,3 @@
-using System;
 using FormatKFIV.Asset;
 
 namespace ToolsForKFIV.Asset;

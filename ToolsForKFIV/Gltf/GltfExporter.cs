@@ -9,13 +9,7 @@ using SharpGLTF.Geometry;
 using SharpGLTF.Geometry.VertexTypes;
 using SharpGLTF.Materials;
 using SharpGLTF.Scenes;
-using SharpGLTF.Schema2;
 using SharpGLTF.Transforms;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using Image = SixLabors.ImageSharp.Image;
-using Scene = FormatKFIV.Asset.Scene;
-using Texture = FormatKFIV.Asset.Texture;
 
 namespace ToolsForKFIV.Gltf;
 
@@ -32,6 +26,102 @@ public class GltfExporter
     {
         var scene = _sceneData;
 
+        var texturesByGuid = GenerateTextures(scene);
+
+        var gltf = new SceneBuilder(fileName);
+
+        var numChunk = 0;
+        foreach (var chunk in scene.chunks)
+        {
+            if (chunk.drawModelID >= 0)
+            {
+                var model = scene.omdData[chunk.drawModelID];
+                var trans = MakeTransform((chunk.position, chunk.rotation, chunk.scale));
+                var sceneBuilder = MakeScene($"Chunk-{numChunk++}", trans, model, texturesByGuid);
+                gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
+            }
+        }
+
+        var numObj = 0;
+        foreach (var obj in scene.objects)
+        {
+            var transform = MakeTransform((obj.position, obj.rotation, obj.scale));
+
+            switch (obj.classID)
+            {
+                case 0x01FB:
+                case 0x01FC:
+                    var light = MakeLight("Light", obj);
+                    gltf.AddLight(light, transform);
+                    break;
+
+                default:
+                    if (obj.drawModelID >= 0)
+                    {
+                        var model = scene.omdData[obj.drawModelID];
+                        var sceneBuilder = MakeScene($"Object-{numObj++}", transform, model, texturesByGuid);
+                        gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
+                    }
+
+                    break;
+            }
+        }
+
+        foreach (var item in scene.items)
+        {
+            var model = scene.omdData[item.omdID];
+            var transform = MakeTransform((item.position, item.rotation, item.scale));
+            var sceneBuilder = MakeScene($"Item-{item.omdID}", transform, model, texturesByGuid);
+            gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
+        }
+
+        gltf.ApplyBasisTransform(Matrix4x4.CreateScale(0.01f));
+        var gltfModel = gltf.ToGltf2();
+
+        Directory.CreateDirectory("export");
+        gltfModel.SaveGLB($"export/{fileName}.glb");
+    }
+
+    private static SceneBuilder MakeScene(string sceneName, AffineTransform transform, Model model,
+        Dictionary<uint, MaterialBuilder> texturesByGuid)
+    {
+        var sceneBuilder = new SceneBuilder(sceneName);
+
+        var meshNum = 0;
+        foreach (var mesh in model.Meshes)
+        {
+            var meshBuilder = MakeMesh($"{sceneName}_Mesh-{meshNum++}", model, mesh, texturesByGuid);
+            sceneBuilder.AddRigidMesh(meshBuilder, transform);
+        }
+
+        return sceneBuilder;
+    }
+
+    private static LightBuilder.Point MakeLight(string name, Scene.Object obj)
+    {
+        var radius = (obj.classParams[11] << 8) | obj.classParams[10];
+        var color = new Vector3(obj.classParams[4], obj.classParams[6], obj.classParams[8]);
+        var light = new LightBuilder.Point
+        {
+            Name = name,
+            Range = radius,
+            Intensity = radius,
+            Color = color
+        };
+        return light;
+    }
+
+    private AffineTransform MakeTransform((Vector3f position, Vector3f rotation, Vector3f scale) trans)
+    {
+        // var quaternion = Quaternion.CreateFromYawPitchRoll(rotation.X, rotation.Y, rotation.Z);
+        var quaternion = Quaternion.Identity;
+        var transform = new AffineTransform(trans.scale.ToVector3(), quaternion, trans.position.ToVector3());
+        return transform;
+    }
+
+
+    private Dictionary<uint, MaterialBuilder> GenerateTextures(Scene scene)
+    {
         var texturesByGuid = new Dictionary<uint, MaterialBuilder>();
         foreach (var tex in scene.texData)
         {
@@ -41,133 +131,23 @@ public class GltfExporter
                 if (subImage != null)
                 {
                     var rgba = tex.GetSubimageAsRGBA(i);
-                    var memoryPng = PngFromRgba(subImage.Value, rgba);
+                    var memoryPng = Textures.PngFromRgba(subImage.Value, rgba);
 
                     var material = new MaterialBuilder()
                         .WithDoubleSide(true)
-                        .WithChannelImage(KnownChannel.BaseColor, memoryPng)
-                        ;
+                        .WithBaseColor(memoryPng);
 
                     texturesByGuid[subImage.Value.UID] = material;
                 }
             }
         }
 
-        var gltf = new SceneBuilder();
-
-        foreach (var chunk in scene.chunks)
-        {
-            if (chunk.drawModelID >= 0)
-            {
-                var model = scene.omdData[chunk.drawModelID];
-                var trans = (chunk.position, chunk.rotation, chunk.scale);
-                var sceneBuilder = MakeScene(trans, model, texturesByGuid);
-                gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
-            }
-        }
-
-        foreach (var obj in scene.objects)
-        {
-            var trans = (obj.position, obj.rotation, obj.scale);
-            
-            switch (obj.classID)
-            {
-                case 0x01FB:
-                case 0x01FC:
-                    var radius = (obj.classParams[11] << 8) | obj.classParams[10];
-                    
-                    var (position, rotation, scale) = trans;
-                    var quaternion = Quaternion.Identity;
-                    var transform = new AffineTransform(scale.ToVector3(), quaternion, position.ToVector3());
-
-                    var color = new Vector3(obj.classParams[4], obj.classParams[6], obj.classParams[8]);
-
-                    var point = new LightBuilder.Point()
-                    {
-                        Range = radius,
-                        Color = color
-                    };
-                    gltf.AddLight(point, transform);
-
-                    break;
-
-                //Until we find exactly what value in the object struct decides if the object uses a OM2 model, this is  the best way.
-                case 0x001A:
-                case 0x0020:
-                case 0x0041:
-                case 0x0044:
-                case 0x0045:
-                case 0x0046:
-                    if (obj.drawModelID >= 0)
-                    {
-                        var model = scene.om2Data[obj.drawModelID];
-                        MakeScene(trans, model, texturesByGuid);
-                        var sceneBuilder = MakeScene(trans, model, texturesByGuid);
-                        gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
-                    }
-
-                    break;
-
-                default:
-                    if (obj.drawModelID >= 0)
-                    {
-                        var model = scene.omdData[obj.drawModelID];
-                        MakeScene(trans, model, texturesByGuid);
-                        var sceneBuilder = MakeScene(trans, model, texturesByGuid);
-                        gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
-                    }
-
-                    break;
-            }
-        }
-
-
-        foreach (var item in scene.items)
-        {
-            var model = scene.omdData[item.omdID];
-            var trans = (item.position, item.rotation, item.scale);
-
-            var sceneBuilder = MakeScene(trans, model, texturesByGuid);
-            gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
-        }
-
-        var gltfModel = gltf.ToGltf2();
-
-        Directory.CreateDirectory("export");
-        gltfModel.SaveGLB($"export/{fileName}.glb");
+        return texturesByGuid;
     }
 
-    private static SceneBuilder MakeScene((Vector3f position, Vector3f rotation, Vector3f scale) trans, Model model,
-        Dictionary<uint, MaterialBuilder> texturesByGuid)
-    {
-        var (position, rotation, scale) = trans;
-        var sceneBuilder = new SceneBuilder();
-        // var quaternion = Quaternion.CreateFromYawPitchRoll(rotation.X, rotation.Y, rotation.Z);
-        var quaternion = Quaternion.Identity;
-        var transform = new AffineTransform(scale.ToVector3(), quaternion, position.ToVector3());
-
-        foreach (Model.Mesh mesh in model.Meshes)
-        {
-            var meshBuilder = MeshBuilder(model, mesh, texturesByGuid);
-            sceneBuilder.AddRigidMesh(meshBuilder, transform);
-        }
-
-        return sceneBuilder;
-    }
-
-    private byte[] PngFromRgba(Texture.ImageBuffer image, byte[] data)
-    {
-        var width = (int)image.Width;
-        var height = (int)image.Height;
-
-        using var img = Image.LoadPixelData<Rgba32>(data, width, height);
-        var memoryStream = new MemoryStream();
-        img.SaveAsPng(memoryStream);
-        return memoryStream.GetBuffer();
-    }
-
-    private static MeshBuilder<VertexPositionNormal, VertexColor1Texture1> MeshBuilder(Model model, Model.Mesh mesh,
-        Dictionary<uint, MaterialBuilder> materials)
+    private static MeshBuilder<VertexPositionNormal, VertexColor1Texture1> MakeMesh(string name, Model model,
+        Model.Mesh mesh,
+        IReadOnlyDictionary<uint, MaterialBuilder> materials)
     {
         var material = new MaterialBuilder();
         if (mesh.textureSlot != -1)
@@ -180,9 +160,13 @@ public class GltfExporter
             {
                 material = materials[textureUid];
             }
+            else
+            {
+                Console.Out.WriteLine($"${name} has no texure");
+            }
         }
 
-        var meshBuilder = new MeshBuilder<VertexPositionNormal, VertexColor1Texture1>("mesh");
+        var meshBuilder = new MeshBuilder<VertexPositionNormal, VertexColor1Texture1>(name);
         foreach (var meshPrimitive in mesh.primitives)
         {
             switch (meshPrimitive)
@@ -222,17 +206,11 @@ public class GltfExporter
                     );
                     break;
                 }
-                case Model.LinePrimitive lp:
-                    Console.Out.WriteLine("line");
-                    break;
+                case Model.LinePrimitive:
+                    throw new Exception("Does not handle line primitive");
             }
         }
 
         return meshBuilder;
     }
-}
-
-static class Ext
-{
-    public static Vector3 ToVector3(this Vector3f v) => new(v.X, v.Y, v.Z);
 }

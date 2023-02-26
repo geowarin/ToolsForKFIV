@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+<!--    <UseWindowsForms>true</UseWindowsForms>-->
+    <Authors>TSBattenberg</Authors>
+    <Company>FromSoft Modding Committee</Company>
+    <Description>https://discord.gg/mzPPVvezSH</Description>
+    <RootNamespace>OpenGlKFIV</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FormatKFIV\FormatKFIV.csproj" />
+    <ProjectReference Include="..\ResourceKFIV\ResourceKFIV.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+<!--    <PackageReference Include="NeatInput.Windows" Version="2.0.1" />-->
+    <PackageReference Include="OpenTK" Version="4.6.7" />
+    <PackageReference Include="System.Resources.Extensions" Version="6.0.0" />
+    <PackageReference Include="YamlDotNet" Version="12.0.2" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include="Resource/**" CopyToOutputDirectory="Always" LinkBase="Resource" />
+  </ItemGroup>
+
+</Project>

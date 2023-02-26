@@ -1,6 +1,6 @@
 using FormatKFIV.Asset;
 
-namespace ToolsForKFIV.Asset;
+namespace ResourceKFIV.Asset;
 
 public record AssetType(string RelativePath);
 

@@ -1,9 +1,8 @@
-using System;
 using System.Numerics;
 using SharpGLTF.Geometry;
 using SharpGLTF.Geometry.VertexTypes;
 
-namespace ToolsForKFIV.Test;
+namespace GltfKFIV.Test;
 
 using VERTEX = VertexBuilder<VertexPositionNormal, VertexColor1Texture1, VertexEmpty>;
 

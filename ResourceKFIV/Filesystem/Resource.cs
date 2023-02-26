@@ -1,4 +1,4 @@
-﻿namespace ToolsForKFIV
+﻿namespace ResourceKFIV.Filesystem
 {
     public interface Resource
     {

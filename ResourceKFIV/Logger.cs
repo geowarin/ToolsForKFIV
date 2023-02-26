@@ -1,4 +1,4 @@
-namespace ToolsForKFIV;
+namespace ResourceKFIV;
 
 public class Logger
 {

@@ -8,8 +8,8 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using ToolsForKFIV;
-using ToolsForKFIV.Asset;
+using ResourceKFIV.Asset;
+using ResourceKFIV.Filesystem;
 
 namespace OpenGlKFIV.UI.Control;
 

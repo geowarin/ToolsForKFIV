@@ -1,9 +1,8 @@
-using System.IO;
 using FormatKFIV.Asset;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace ToolsForKFIV.Gltf;
+namespace GltfKFIV.Gltf;
 
 static internal class Textures
 {

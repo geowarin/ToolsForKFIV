@@ -8,7 +8,6 @@ using SharpGLTF.Geometry.VertexTypes;
 using SharpGLTF.Materials;
 using SharpGLTF.Scenes;
 using SharpGLTF.Transforms;
-using ToolsForKFIV.Gltf;
 
 namespace GltfKFIV.Gltf;
 

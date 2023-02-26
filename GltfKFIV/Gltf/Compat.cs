@@ -1,7 +1,7 @@
 using System.Numerics;
 using FormatKFIV.Utility;
 
-namespace ToolsForKFIV.Gltf;
+namespace GltfKFIV.Gltf;
 
 static class Compat
 {

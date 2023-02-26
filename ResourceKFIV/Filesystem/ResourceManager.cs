@@ -1,7 +1,7 @@
 ﻿using FormatKFIV.Asset;
 using FormatKFIV.FileFormat;
 
-namespace ToolsForKFIV
+namespace ResourceKFIV.Filesystem
 {
     /// <summary>Static storage location for all currently loaded/allocated data.</summary>
     public static class ResourceManager

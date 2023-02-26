@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-namespace ToolsForKFIV
+﻿namespace ResourceKFIV.Filesystem
 {
     public class SystemResource : Resource
     {

@@ -1,4 +1,6 @@
-namespace ToolsForKFIV.Utils;
+using ResourceKFIV.Filesystem;
+
+namespace ResourceKFIV;
 
 public class Resources
 {

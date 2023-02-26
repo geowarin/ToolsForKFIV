@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using FormatKFIV.Asset;
+﻿using FormatKFIV.Asset;
 using FormatKFIV.FileFormat;
-using ToolsForKFIV.Asset;
+using ResourceKFIV.Asset;
+using ResourceKFIV.Filesystem;
 
-namespace ToolsForKFIV;
+namespace ResourceKFIV;
 
 public class ResourceLoader
 {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ToolsForKFIV
+﻿namespace ResourceKFIV.Filesystem
 {
     public class VirtualResource : Resource
     {

@@ -1,5 +1,5 @@
 using GltfKFIV.Gltf;
-using ToolsForKFIV.Asset;
+using ResourceKFIV.Asset;
 
 namespace ToolsForKFIV.Actions;
 

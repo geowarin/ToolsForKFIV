@@ -1,5 +1,5 @@
 using OpenGlKFIV.UI.Control;
-using ToolsForKFIV.Asset;
+using ResourceKFIV.Asset;
 
 namespace ToolsForKFIV.Actions;
 

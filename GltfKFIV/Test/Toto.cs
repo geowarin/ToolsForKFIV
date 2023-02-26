@@ -1,4 +1,3 @@
- using System.IO;
 using System.Numerics;
 using SharpGLTF.Geometry;
 using SharpGLTF.Geometry.VertexTypes;
@@ -7,7 +6,7 @@ using SharpGLTF.Scenes;
 using SharpGLTF.Schema2;
 using SharpGLTF.Transforms;
 
-namespace ToolsForKFIV.Test;
+namespace GltfKFIV.Test;
 
 public class Toto
 {

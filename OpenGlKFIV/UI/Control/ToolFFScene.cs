@@ -39,14 +39,14 @@ public class ToolFFScene : GameWindow
         if (scene != null)
         {
             //Clear Texture Data
-            foreach (uint texKey in ResourceManager.glTextures.Keys)
+            foreach (uint texKey in Textures.glTextures.Keys)
             {
-                GLTexture tex = ResourceManager.glTextures[texKey];
+                GLTexture tex = Textures.glTextures[texKey];
                 tex.Destroy();
             }
 
-            ResourceManager.glTextures.Clear();
-            ResourceManager.glTextures.Add(0xDEADBEEF, GLTexture.Generate44Grid());
+            Textures.glTextures.Clear();
+            Textures.glTextures.Add(0xDEADBEEF, GLTexture.Generate44Grid());
 
             scene.Dispose();
             scene = null;
@@ -115,10 +115,14 @@ public class ToolFFScene : GameWindow
 
         //Initialize Shaders
         glShaders = new GLShader[2];
-        glShaders[0] = new GLShader(ResourceManager.ProgramDirectory + "Resource/shd_3DColour.vs",
-            ResourceManager.ProgramDirectory + "Resource/shd_3DColour.fs");
-        glShaders[1] = new GLShader(ResourceManager.ProgramDirectory + "Resource/shd_3DNormTexColour.vs",
-            ResourceManager.ProgramDirectory + "Resource/shd_3DNormTexColour.fs");
+        glShaders[0] = new GLShader(
+            "Resource/shd_3DColour.vs",
+            "Resource/shd_3DColour.fs"
+        );
+        glShaders[1] = new GLShader(
+            "Resource/shd_3DNormTexColour.vs",
+            "Resource/shd_3DNormTexColour.fs"
+        );
         glShaders[1].SetUniformInt1("sDiffuse", 0);
 
         //Initialize Scene Viewer Models
@@ -130,7 +134,7 @@ public class ToolFFScene : GameWindow
         glSceneTextures[0] = GLTexture.Generate44Grid();
         glSceneTextures[1] = GLTexture.Generate44White();
 
-        ResourceManager.glTextures.Add(0xDEADBEEF, GLTexture.Generate44Grid());
+        Textures.glTextures.Add(0xDEADBEEF, GLTexture.Generate44Grid());
 
         SwapBuffers();
     }
@@ -160,7 +164,7 @@ public class ToolFFScene : GameWindow
 
     private void Paint()
     {
-        GL.ClearColor(ResourceManager.settings.mtBgCC.ToColor());
+        GL.ClearColor(Settings.Instance.mtBgCC.ToColor());
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
         GL.Enable(EnableCap.Multisample);
@@ -196,7 +200,7 @@ public class ToolFFScene : GameWindow
         var mouseState = MouseState;
         lastMousePosition.X = mousePosition.X;
         lastMousePosition.Y = mousePosition.Y;
-        
+
         if (!IsFocused)
         {
             return;

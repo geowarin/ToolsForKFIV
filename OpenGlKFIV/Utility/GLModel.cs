@@ -67,9 +67,9 @@ namespace ToolsForKFIV.Utility
 
             int gridWidth = 15, gridHeight = 15;
 
-            Color xAxisC = ResourceManager.settings.mtXAxC.ToColor();
-            Color yAxisC = ResourceManager.settings.mtYAxC.ToColor();
-            Color zAxisC = ResourceManager.settings.mtZAxC.ToColor();
+            Color xAxisC = Settings.Instance.mtXAxC.ToColor();
+            Color yAxisC = Settings.Instance.mtYAxC.ToColor();
+            Color zAxisC = Settings.Instance.mtZAxC.ToColor();
 
             VertexDataList.AddRange(new float[] { 0, 0f, -100 * gridHeight});
             VertexDataList.AddRange(new float[] { xAxisC.R / 255f, xAxisC.G / 255f, xAxisC.B / 255f, 1f });

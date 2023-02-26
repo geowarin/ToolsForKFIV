@@ -6,6 +6,7 @@ using FormatKFIV.Asset;
 
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
+using ToolsForKFIV.Utility;
 
 namespace ToolsForKFIV.Rendering
 {
@@ -165,7 +166,7 @@ namespace ToolsForKFIV.Rendering
                             _textureUID = 0x00000000;
                         }
 
-                        if (!ResourceManager.glTextures.ContainsKey(model.TextureSlots[mesh.textureSlot].slotKey))
+                        if (!Textures.glTextures.ContainsKey(model.TextureSlots[mesh.textureSlot].slotKey))
                         {
                             _textureSlot = -1;
                             _textureUID = 0x00000000;
@@ -248,16 +249,16 @@ namespace ToolsForKFIV.Rendering
             if(_textureSlot != -1)
             {
                 //Set my personal texture.
-                ResourceManager.glTextures[_textureUID].Bind(TextureUnit.Texture0, TextureTarget.Texture2D);
+                Textures.glTextures[_textureUID].Bind(TextureUnit.Texture0, TextureTarget.Texture2D);
             }
             else
             {
-                ResourceManager.glTextures[0xDEADBEEF].Bind(TextureUnit.Texture0, TextureTarget.Texture2D);
+                Textures.glTextures[0xDEADBEEF].Bind(TextureUnit.Texture0, TextureTarget.Texture2D);
             }
 
             StaticMesh.Draw();
 
-            ResourceManager.glTextures[0xDEADBEEF].Bind(TextureUnit.Texture0, TextureTarget.Texture2D);
+            Textures.glTextures[0xDEADBEEF].Bind(TextureUnit.Texture0, TextureTarget.Texture2D);
         }
 
         //Disposal

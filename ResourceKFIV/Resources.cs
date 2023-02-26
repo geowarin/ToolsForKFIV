@@ -1,5 +1,3 @@
-using OpenTK.Windowing.GraphicsLibraryFramework;
-
 namespace ToolsForKFIV.Utils;
 
 public class Resources
@@ -8,7 +6,7 @@ public class Resources
 
     public Resources()
     {
-        ResourceManager.Initialize(AppDomain.CurrentDomain.BaseDirectory);
+        ResourceManager.Initialize();
         _resources = ResourceLoader.OpenKFivFile("/home/geo/Documents/King's Field - The Ancient City/SLUS_203.18");
     }
     

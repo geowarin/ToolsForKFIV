@@ -75,14 +75,14 @@ namespace ToolsForKFIV.Rendering
                     {
                         Console.WriteLine($"Texture [{currentTex}] SubImage [{i}] = 0x{subImage.Value.UID}");
 
-                        if (ResourceManager.glTextures.ContainsKey(subImage.Value.UID))
+                        if (Textures.glTextures.ContainsKey(subImage.Value.UID))
                         {
                             continue;
                         }
 
                         GLTexture glTexture = GLTexture.GenerateFromSubImage(tex, i);
 
-                        ResourceManager.glTextures.Add(subImage.Value.UID, glTexture);
+                        Textures.glTextures.Add(subImage.Value.UID, glTexture);
                     }
                 }
                 currentTex++;

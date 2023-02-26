@@ -10,8 +10,4 @@
       <ProjectReference Include="..\FormatKFIV\FormatKFIV.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Filesystem" />
-    </ItemGroup>
-
 </Project>

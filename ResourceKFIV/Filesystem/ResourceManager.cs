@@ -1,81 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-
-using FormatKFIV.Asset;
+﻿using FormatKFIV.Asset;
 using FormatKFIV.FileFormat;
-using ToolsForKFIV.Utility;
 
 namespace ToolsForKFIV
 {
     /// <summary>Static storage location for all currently loaded/allocated data.</summary>
     public static class ResourceManager
     {
-        /// <summary>Store Format Handelers</summary>
         private static List<FIFormat<Model>> formatsModel;
         private static List<FIFormat<Texture>> formatsTexture;
         private static List<FIFormat<Scene>> formatsScene;
         private static List<FIFormat<Param>> formatsParam;
 
-        public static Dictionary<uint, GLTexture> glTextures = new Dictionary<uint, GLTexture>();
+        public static VirtualFileSystem vfs = new();
 
-        /// <summary>Stores data files</summary>
-        public static VirtualFileSystem vfs = new VirtualFileSystem();
-
-        ///<summary>Stores pretty names</summary>
-        public static FFPrettyNames PrettyNamesData = null;
-
-        ///<summary>Stores settings</summary>
-        public static Settings settings = null;
-
-        ///<summary>Stores path to exe</summary>
-        public static string ProgramDirectory;
-
-        /// <summary>Reference to the main window</summary>
-        public static ResourceLoader winMain;
-
-        /// <summary>Initializes the resource manager. Must be called before any other call to it.</summary>
-        /// <param name="programDir">Directory of the exe file.</param>
-        public static void Initialize(string programDir)
+        public static void Initialize()
         {
-            ProgramDirectory = programDir;
-
-            //Initialize PrettyNames class
-            PrettyNamesData = new FFPrettyNames();
-            PrettyNamesData.Initialize();
-            PrettyNamesData.LoadPrettyNames(ProgramDirectory + "Resource\\prettynames.csv");
-
-            //Load Settings
-            settings = Settings.LoadConfiguration();
-
             //Initialize Model Handlers
-            formatsModel = new List<FIFormat<Model>>();
-            formatsModel.Add(new FFModelICO());
-            formatsModel.Add(new FFModelOMD());
-            formatsModel.Add(new FFModelOM2());
-            formatsModel.Add(new FFModelMOD());
-            formatsModel.Add(new FFModelCHR());
-
-            formatsModel.Add(new FFModelOBJ());
+            formatsModel = new List<FIFormat<Model>>
+            {
+                new FFModelICO(),
+                new FFModelOMD(),
+                new FFModelOM2(),
+                new FFModelMOD(),
+                new FFModelCHR(),
+                new FFModelOBJ()
+            };
 
             //Initialize Texture Handlers
-            formatsTexture = new List<FIFormat<Texture>>();
-            formatsTexture.Add(new FFTextureTX2());
-            formatsTexture.Add(new FFTextureTM2());
-            formatsTexture.Add(new FFTextureTMX());
-
-            formatsTexture.Add(new FFTextureTGA());
-            formatsTexture.Add(new FFTexturePNG());
+            formatsTexture = new List<FIFormat<Texture>>
+            {
+                new FFTextureTX2(),
+                new FFTextureTM2(),
+                new FFTextureTMX(),
+                new FFTextureTGA(),
+                new FFTexturePNG()
+            };
 
             //Initialize Scene Handlers
-            formatsScene = new List<FIFormat<Scene>>();
-            formatsScene.Add(new FFSceneMAP());
+            formatsScene = new List<FIFormat<Scene>>
+            {
+                new FFSceneMAP()
+            };
 
             //Initialize Param Handlers
-            formatsParam = new List<FIFormat<Param>>();
-            formatsParam.Add(new FFParamReverb());
-            formatsParam.Add(new FFParamItemName());
-            formatsParam.Add(new FFParamWeapon());
-            formatsParam.Add(new FFParamMagic());
+            formatsParam = new List<FIFormat<Param>>
+            {
+                new FFParamReverb(),
+                new FFParamItemName(),
+                new FFParamWeapon(),
+                new FFParamMagic()
+            };
         }
 
         /// <summary>Scan through each registered format to see if a particular one is supported</summary>
@@ -90,7 +64,7 @@ namespace ToolsForKFIV
             FEType formatType = FEType.None;
 
             //Scan each model format
-            foreach(FIFormat<Model> fmt in formatsModel)
+            foreach (FIFormat<Model> fmt in formatsModel)
             {
                 //Check all extensions this particular format supports...
                 string[] extensions = fmt.Parameters.Extensions;
@@ -119,7 +93,7 @@ namespace ToolsForKFIV
             }
 
             //Scan each texture format
-            foreach(FIFormat<Texture> fmt in formatsTexture)
+            foreach (FIFormat<Texture> fmt in formatsTexture)
             {
                 //Check all extensions this particular format supports...
                 string[] extensions = fmt.Parameters.Extensions;
@@ -205,15 +179,15 @@ namespace ToolsForKFIV
                 }
             }
 
-            goto NoFoundFormatHandler;  //Exclusively here to piss you off.
-            NoFoundFormatHandler:       //^^
+            goto NoFoundFormatHandler; //Exclusively here to piss you off.
+            NoFoundFormatHandler: //^^
             Logger.LogWarn("Couldn't find a format handler for: " + fileExt);
 
             type = formatType;
             handler = formatHandler;
             return false;
 
-            FoundFormatHandler:         //Don't get lost in the gotos. You get send here from the loops to avoid redudent code.
+            FoundFormatHandler: //Don't get lost in the gotos. You get send here from the loops to avoid redudent code.
             type = formatType;
             handler = formatHandler;
             return true;
@@ -237,6 +211,7 @@ namespace ToolsForKFIV
 
             return formatsArray;
         }
+
         public static FIFormat<Model>[] GetExportableModelFormats()
         {
             List<FIFormat<Model>> formats = new List<FIFormat<Model>>();

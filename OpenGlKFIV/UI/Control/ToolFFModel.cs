@@ -58,10 +58,14 @@ public class ToolFFModel : GameWindow
     {
         base.OnLoad();
         //Initialize Shaders
-        shader3DColour = new GLShader(ResourceManager.ProgramDirectory + "Resource/shd_3DColour.vs",
-            ResourceManager.ProgramDirectory + "Resource/shd_3DColour.fs");
-        shader3DNormTexColour = new GLShader(ResourceManager.ProgramDirectory + "Resource/shd_3DNormTexColour.vs",
-            ResourceManager.ProgramDirectory + "Resource/shd_3DNormTexColour.fs");
+        shader3DColour = new GLShader(
+            "Resource/shd_3DColour.vs",
+            "Resource/shd_3DColour.fs"
+        );
+        shader3DNormTexColour = new GLShader(
+            "Resource/shd_3DNormTexColour.vs",
+            "Resource/shd_3DNormTexColour.fs"
+        );
 
         //Initialize Models
         //modelAxis = GLModel.Generate3DAxis();
@@ -103,7 +107,7 @@ public class ToolFFModel : GameWindow
         matrixView = Matrix4.LookAt(vectorCEye, Vector3.Zero, Vector3.UnitY);
 
         //Do OpenGL
-        GL.ClearColor(ResourceManager.settings.mtBgCC.ToColor());
+        GL.ClearColor(Settings.Instance.mtBgCC.ToColor());
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
         GL.Enable(EnableCap.DepthTest);
@@ -117,7 +121,7 @@ public class ToolFFModel : GameWindow
         shader3DColour.Bind();
         shader3DColour.SetUniformMat4("cameraMatrix", matrixView * matrixProjection, false);
 
-        if (ResourceManager.settings.mtShowGridAxis)
+        if (Settings.Instance.mtShowGridAxis)
         {
             modelGrid.DrawLines();
         }

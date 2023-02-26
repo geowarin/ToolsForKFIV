@@ -23,8 +23,8 @@ namespace ToolsForKFIV.Utility
             //Read Vs/Fs Shader Sources
             try
             {
-                vsSource = File.ReadAllText(vsPath);
-                fsSource = File.ReadAllText(fsPath);
+                vsSource = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, vsPath));
+                fsSource = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fsPath));
             }
             catch (Exception ex)
             {

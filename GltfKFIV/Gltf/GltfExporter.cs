@@ -1,5 +1,3 @@
-
-
 using System.Numerics;
 using FormatKFIV.Asset;
 using FormatKFIV.Utility;
@@ -24,7 +22,7 @@ public class GltfExporter
     public void Export(string exportDir)
     {
         var scene = _sceneAsset.Scene;
-        var texturesByGuid = GenerateTextures(scene);
+        var texturesByGuid = Textures.GenerateTextures(scene);
 
         var fileName = Path.GetFileName(_sceneAsset.RelativePath);
         var gltf = new SceneBuilder(fileName);
@@ -53,7 +51,7 @@ public class GltfExporter
                     var light = MakeLight("Light", obj);
                     gltf.AddLight(light, transform);
                     break;
-                
+
                 //Until we find exactly what value in the object struct decides if the object uses a OM2 model, this is  the best way.
                 case 0x001A:
                 case 0x0020:
@@ -133,35 +131,8 @@ public class GltfExporter
         return transform;
     }
 
-
-    private Dictionary<uint, MaterialBuilder> GenerateTextures(Scene scene)
-    {
-        var texturesByGuid = new Dictionary<uint, MaterialBuilder>();
-        foreach (var tex in scene.texData)
-        {
-            for (var i = 0; i < tex.SubimageCount; ++i)
-            {
-                var subImage = tex.GetSubimage(i);
-                if (subImage != null)
-                {
-                    var rgba = tex.GetSubimageAsRGBA(i);
-                    var memoryPng = Textures.PngFromRgba(subImage.Value, rgba);
-
-                    var material = new MaterialBuilder()
-                        .WithDoubleSide(true)
-                        .WithBaseColor(memoryPng);
-
-                    texturesByGuid[subImage.Value.UID] = material;
-                }
-            }
-        }
-
-        return texturesByGuid;
-    }
-
     private static MeshBuilder<VertexPositionNormal, VertexColor1Texture1> MakeMesh(string name, Model model,
-        Model.Mesh mesh,
-        IReadOnlyDictionary<uint, MaterialBuilder> materials)
+        Model.Mesh mesh, IReadOnlyDictionary<uint, MaterialBuilder> materials)
     {
         var material = new MaterialBuilder();
         if (mesh.textureSlot != -1)
@@ -176,7 +147,7 @@ public class GltfExporter
             }
             else
             {
-                Console.Out.WriteLine($"${name} has no texure");
+                Console.Out.WriteLine($"${name} has no texture");
             }
         }
 

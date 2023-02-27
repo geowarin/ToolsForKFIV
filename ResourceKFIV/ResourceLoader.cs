@@ -9,40 +9,38 @@ public class ResourceLoader
 {
     public static IEnumerable<Resource> OpenKFivFile(string path)
     {
-        string foundPath = Path.GetDirectoryName(path);
+        var foundPath = Path.GetDirectoryName(path);
 
-        ResourceManager.vfs.Reset();
-        ResourceManager.vfs.SetRoot(foundPath + Path.DirectorySeparatorChar);
+        var vfs = new VirtualFileSystem();
 
-        //Scan OS File System
-        foreach (string dir in Directory.GetDirectories(foundPath, "*", SearchOption.AllDirectories))
+        foreach (var dir in Directory.GetDirectories(foundPath, "*", SearchOption.AllDirectories))
         {
-            foreach (string file in Directory.GetFiles(dir))
+            foreach (var file in Directory.GetFiles(dir))
             {
-                string vfsPath = file.Replace(foundPath + Path.DirectorySeparatorChar, "");
+                var vfsPath = file.Replace(foundPath + Path.DirectorySeparatorChar, "");
 
                 if (!vfsPath.Contains("KF4.DAT"))
                 {
-                    ResourceManager.vfs.PutResource(new SystemResource(vfsPath, file));
+                    vfs.PutResource(new SystemResource(vfsPath, file));
                 }
             }
         }
 
-        foreach (string file in Directory.GetFiles(foundPath))
+        foreach (var file in Directory.GetFiles(foundPath))
         {
-            string vfsPath = file.Replace(foundPath + Path.DirectorySeparatorChar, "");
-            ResourceManager.vfs.PutResource(new SystemResource(vfsPath, file));
+            var vfsPath = file.Replace(foundPath + Path.DirectorySeparatorChar, "");
+            vfs.PutResource(new SystemResource(vfsPath, file));
         }
 
         string[] kf4DatFiles;
-        string kf4Region = "None";
+        var kf4Region = "None";
 
         switch (Path.GetFileName(path))
         {
             case "SLUS_203.18":
             case "SLUS_203.53":
                 kf4Region = "NTSC";
-                kf4DatFiles = new string[]
+                kf4DatFiles = new[]
                 {
                     $"DATA{Path.DirectorySeparatorChar}KF4.DAT",
                 };
@@ -50,7 +48,7 @@ public class ResourceLoader
 
             case "SLPS_250.57":
                 kf4Region = "NTSC-J";
-                kf4DatFiles = new string[]
+                kf4DatFiles = new[]
                 {
                     $"DATA{Path.DirectorySeparatorChar}KF4.DAT",
                 };
@@ -58,111 +56,38 @@ public class ResourceLoader
 
             case "SLES_509.20":
                 kf4Region = "PAL";
-                kf4DatFiles = new string[]
+                kf4DatFiles = new[]
                 {
                     $"DATA{Path.DirectorySeparatorChar}KF4_ENG.DAT",
                 };
                 break;
 
             default:
-                kf4DatFiles = new string[] { "None" };
+                kf4DatFiles = new[] { "None" };
                 break;
         }
 
         if (kf4Region == "None")
         {
-            Logger.LogError("Invalid KF4 Data! Did you try to trick the system by renaming something?");
-            Logger.LogError($"{path}");
-            return Array.Empty<Resource>();
+            throw new Exception("Invalid KF4 Data! Did you try to trick the system by renaming something?");
         }
 
-        Logger.LogInfo($"Loading KFIV Data (region: {kf4Region}, exe: {path})");
-
-        //Scan KF File System
-        FFResourceDAT dataDat;
-        foreach (string datFile in kf4DatFiles)
+        foreach (var datFile in kf4DatFiles)
         {
-            dataDat = FFResourceDAT.LoadFromFile(foundPath + Path.DirectorySeparatorChar + datFile);
-            for (int i = 0; i < dataDat.FileCount; ++i)
+            var dataDat = FFResourceDAT.LoadFromFile(foundPath + Path.DirectorySeparatorChar + datFile);
+            for (var i = 0; i < dataDat.FileCount; ++i)
             {
-                string vfsPath = datFile + Path.DirectorySeparatorChar +
-                                 dataDat[i].name.Replace('/', Path.DirectorySeparatorChar);
-                ResourceManager.vfs.PutResource(new VirtualResource(vfsPath, dataDat[i].buffer));
+                var vfsPath = datFile + Path.DirectorySeparatorChar +
+                              dataDat[i].name.Replace('/', Path.DirectorySeparatorChar);
+                vfs.PutResource(new VirtualResource(vfsPath, dataDat[i].buffer));
             }
         }
 
-        return ResourceManager.vfs.GetResources();
-    }
-
-    private static byte[] GetBuffer(Resource resource)
-    {
-        Type resourceType = resource.GetType();
-        switch (resource)
-        {
-            case VirtualResource vres:
-                Logger.LogInfo("Opened file is VIRTUAL type!");
-                return vres.Buffer;
-
-            case SystemResource sres:
-                byte[] fileBuffer;
-                Logger.LogInfo("Opened file is SYSTEM type!");
-
-                if (!sres.GetBuffer(out fileBuffer))
-                {
-                    throw new Exception("Failed to aquire system file buffer!!!");
-                }
-
-                return fileBuffer;
-
-            default:
-                throw new Exception($"An invalid object is inside the VFS ({resourceType.Name}), WTF?");
-        }
+        return vfs.GetResources();
     }
 
     public static AssetType OpenResource(Resource resource)
     {
-        var relativePath = resource.RelativePath;
-        var fileExtension = Path.GetExtension(relativePath);
-        var fileBuffer = GetBuffer(resource);
-
-        if (!ResourceManager.FormatIsSupported(fileExtension, fileBuffer, out var formatType, out var formatHandler))
-        {
-            throw new Exception($"Unable to find format handler for file! (file: {relativePath})");
-        }
-
-        switch (formatType)
-        {
-            default:
-            case FEType.None:
-                throw new Exception("Invalid file type!");
-
-            case FEType.Param:
-                Logger.LogInfo("Attempting to import parameters...");
-
-                FIFormat<Param> paramHandler = (FIFormat<Param>)formatHandler;
-                return new ParamAsset(relativePath, paramHandler.LoadFromMemory(fileBuffer, out _, out _, out _));
-
-            case FEType.Scene:
-                Logger.LogInfo("Attempting to import scene...");
-
-                FIFormat<Scene> sceneHandler = (FIFormat<Scene>)formatHandler;
-                return new SceneAsset(relativePath, sceneHandler.LoadFromMemory(fileBuffer, out _, out _, out _));
-
-            case FEType.Texture:
-                Logger.LogInfo("Attempting to import texture...");
-
-                FIFormat<Texture> textureHandler = (FIFormat<Texture>)formatHandler;
-                return new TextureAsset(relativePath, textureHandler.LoadFromMemory(fileBuffer, out _, out _, out _));
-
-            case FEType.Model:
-                Logger.LogInfo("Attempting to import model...");
-                FIFormat<Model> modelHandler = (FIFormat<Model>)formatHandler;
-
-                return new ModelAsset(
-                    relativePath, 
-                    modelHandler.LoadFromMemory(fileBuffer, out var modelTextureData, out _, out _),
-                    (Texture)modelTextureData
-                );
-        }
+        return ResourceManager.GetHandler(resource);
     }
 }

@@ -1,7 +1,8 @@
-﻿namespace ResourceKFIV.Filesystem
+﻿namespace ResourceKFIV.Filesystem;
+
+public interface Resource
 {
-    public interface Resource
-    {
-        string RelativePath { get; }
-    }
+    string RelativePath { get; }
+
+    byte[] Buffer { get; }
 }

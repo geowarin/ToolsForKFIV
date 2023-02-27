@@ -1,53 +1,27 @@
-﻿namespace ResourceKFIV.Filesystem
+﻿namespace ResourceKFIV.Filesystem;
+
+public class SystemResource : Resource
 {
-    public class SystemResource : Resource
+    public string RelativePath { get; }
+
+    private string Path { get; }
+
+    public SystemResource(string virtualPath, string osPath)
     {
-        //Data
-        private string _virtualPath;
-        private string _osPath;
+        RelativePath = virtualPath;
+        Path = osPath;
+    }
 
-        //Accessors
-        public string RelativePath
+    public byte[] Buffer => GetBuffer();
+
+    private byte[] GetBuffer()
+    {
+        if (!File.Exists(Path))
         {
-            get
-            {
-                return _virtualPath;
-            }
-        }
-        public string Path
-        {
-            get
-            {
-                return _osPath;
-            }
+            throw new Exception($"Bad File Path: {Path}!!");
         }
 
-        //Constructor
-        public SystemResource(string virtualPath, string osPath)
-        {
-            _virtualPath = virtualPath;
-            _osPath = osPath;
-        }
-
-        public bool GetBuffer(out byte[] buffer)
-        {
-            if(!File.Exists(_osPath))
-            {
-                Logger.LogError($"Bad File Path: {_osPath}!!");
-                buffer = null;
-                return false;
-            }
-
-            Logger.LogInfo($"SystemResource is being retrieved from {_osPath}");
-
-            byte[] fileBuffer;
-            using (BinaryReader binr = new BinaryReader(File.OpenRead(_osPath)))
-            {
-                fileBuffer = binr.ReadBytes((int)binr.BaseStream.Length);
-            }
-
-            buffer = fileBuffer;
-            return true;
-        }
+        using var reader = new BinaryReader(File.OpenRead(Path));
+        return reader.ReadBytes((int)reader.BaseStream.Length);
     }
 }

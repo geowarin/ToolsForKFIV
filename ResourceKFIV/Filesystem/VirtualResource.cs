@@ -1,27 +1,14 @@
-﻿namespace ResourceKFIV.Filesystem
+﻿namespace ResourceKFIV.Filesystem;
+
+public class VirtualResource : Resource
 {
-    public class VirtualResource : Resource
+    public string RelativePath { get; }
+    public byte[] Buffer { get; }
+
+    //Constructor
+    public VirtualResource(string path, byte[] buffer)
     {
-        //Data
-        private string _virtualPath;
-        private byte[] _buffer;
-
-        //Accessors
-        public string RelativePath
-        {
-            get { return _virtualPath; }
-        }
-
-        public byte[] Buffer
-        {
-            get { return _buffer; }
-        }
-
-        //Constructor
-        public VirtualResource(string path, byte[] buffer)
-        {
-            _virtualPath = path;
-            _buffer = buffer;
-        }
+        RelativePath = path;
+        Buffer = buffer;
     }
 }

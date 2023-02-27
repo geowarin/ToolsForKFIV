@@ -53,6 +53,22 @@ public class GltfExporter
                     var light = MakeLight("Light", obj);
                     gltf.AddLight(light, transform);
                     break;
+                
+                //Until we find exactly what value in the object struct decides if the object uses a OM2 model, this is  the best way.
+                case 0x001A:
+                case 0x0020:
+                case 0x0041:
+                case 0x0044:
+                case 0x0045:
+                case 0x0046:
+                    if (obj.drawModelID >= 0)
+                    {
+                        var model = scene.om2Data[obj.drawModelID];
+                        var sceneBuilder = MakeScene($"Object-{numObj++}", transform, model, texturesByGuid);
+                        gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
+                    }
+
+                    break;
 
                 default:
                     if (obj.drawModelID >= 0)

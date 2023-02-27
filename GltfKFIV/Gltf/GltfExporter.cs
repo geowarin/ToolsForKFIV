@@ -128,8 +128,7 @@ public class GltfExporter
 
     private AffineTransform MakeTransform((Vector3f position, Vector3f rotation, Vector3f scale) trans)
     {
-        // var quaternion = Quaternion.CreateFromYawPitchRoll(rotation.X, rotation.Y, rotation.Z);
-        var quaternion = Quaternion.Identity;
+        var quaternion = Quaternion.CreateFromYawPitchRoll(trans.rotation.Y, trans.rotation.X, trans.rotation.Z);
         var transform = new AffineTransform(trans.scale.ToVector3(), quaternion, trans.position.ToVector3());
         return transform;
     }

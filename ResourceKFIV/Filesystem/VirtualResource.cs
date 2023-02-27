@@ -1,6 +1,6 @@
 ﻿namespace ResourceKFIV.Filesystem;
 
-public class VirtualResource : Resource
+public class VirtualResource : IResource
 {
     public string RelativePath { get; }
     public byte[] Buffer { get; }

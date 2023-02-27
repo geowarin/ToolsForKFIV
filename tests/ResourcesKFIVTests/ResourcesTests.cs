@@ -12,7 +12,7 @@ public class ResourcesTests
     [Test]
     public void list_resources()
     {
-        var maps = new Resources().GetMaps();
+        var maps = new Resources().GetMapsResources();
 
         Assert.AreEqual(
             new[]
@@ -90,15 +90,6 @@ public class ResourcesTests
     public void open_resource()
     {
         var map = new Resources().GetMaps().First();
-        var asset = ResourceLoader.OpenResource(map);
-        
-        if (asset is SceneAsset sceneAsset)
-        {
-            Assert.IsTrue(sceneAsset.Scene.chunks.Count > 0);
-        }
-        else
-        {
-            Assert.Fail("Should be a scene assset");
-        }
+        Assert.IsTrue(map.Scene.chunks.Count > 0);
     }
 }

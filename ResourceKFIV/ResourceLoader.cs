@@ -1,35 +1,34 @@
-﻿using FormatKFIV.Asset;
-using FormatKFIV.FileFormat;
-using ResourceKFIV.Asset;
+﻿using FormatKFIV.FileFormat;
 using ResourceKFIV.Filesystem;
 
 namespace ResourceKFIV;
 
-public class ResourceLoader
+public abstract class ResourceLoader
 {
-    public static IEnumerable<Resource> OpenKFivFile(string path)
+    public static IEnumerable<IResource> OpenKFivFile(string path)
     {
         var foundPath = Path.GetDirectoryName(path);
-
-        var vfs = new VirtualFileSystem();
-
+        if (foundPath == null)
+        {
+            throw new Exception($"Invalid path {path}");
+        }
+        
         foreach (var dir in Directory.GetDirectories(foundPath, "*", SearchOption.AllDirectories))
         {
             foreach (var file in Directory.GetFiles(dir))
             {
-                var vfsPath = file.Replace(foundPath + Path.DirectorySeparatorChar, "");
-
+                var vfsPath = Path.GetRelativePath(foundPath, file);
                 if (!vfsPath.Contains("KF4.DAT"))
                 {
-                    vfs.PutResource(new SystemResource(vfsPath, file));
+                    yield return new SystemResource(vfsPath, file);
                 }
             }
         }
 
         foreach (var file in Directory.GetFiles(foundPath))
         {
-            var vfsPath = file.Replace(foundPath + Path.DirectorySeparatorChar, "");
-            vfs.PutResource(new SystemResource(vfsPath, file));
+            var vfsPath = Path.GetRelativePath(foundPath, file);;
+            yield return new SystemResource(vfsPath, file);
         }
 
         string[] kf4DatFiles;
@@ -74,20 +73,12 @@ public class ResourceLoader
 
         foreach (var datFile in kf4DatFiles)
         {
-            var dataDat = FFResourceDAT.LoadFromFile(foundPath + Path.DirectorySeparatorChar + datFile);
+            var dataDat = FFResourceDAT.LoadFromFile(Path.Combine(foundPath, datFile));
             for (var i = 0; i < dataDat.FileCount; ++i)
             {
-                var vfsPath = datFile + Path.DirectorySeparatorChar +
-                              dataDat[i].name.Replace('/', Path.DirectorySeparatorChar);
-                vfs.PutResource(new VirtualResource(vfsPath, dataDat[i].buffer));
+                var vfsPath = Path.Combine(datFile, dataDat[i].name);
+                yield return new VirtualResource(vfsPath, dataDat[i].buffer);
             }
         }
-
-        return vfs.GetResources();
-    }
-
-    public static AssetType OpenResource(Resource resource)
-    {
-        return ResourceManager.GetHandler(resource);
     }
 }

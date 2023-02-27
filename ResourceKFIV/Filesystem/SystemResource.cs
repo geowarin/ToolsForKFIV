@@ -1,6 +1,6 @@
 ﻿namespace ResourceKFIV.Filesystem;
 
-public class SystemResource : Resource
+public class SystemResource : IResource
 {
     public string RelativePath { get; }
 

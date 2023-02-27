@@ -37,22 +37,22 @@ public class ToolFFModel : GameWindow
     private GLModel modelGrid;
     private GLModel modelFile;
 
-    private void Export()
-    {
-        var fiFormat = ResourceManager.GetExportableModelFormats().First();
-        var path = "export/model";
-        if (model != null)
-        {
-            FIFormat<Model> mdlFmt = fiFormat;
-            mdlFmt.SaveToFile(path, model);
-        }
-
-        if (texture != null)
-        {
-            FIFormat<Texture> texFmt = new FFTexturePNG();
-            texFmt.SaveToFile(path + ".png", texture);
-        }
-    }
+    // private void Export()
+    // {
+    //     var fiFormat = ResourceManager.GetExportableModelFormats().First();
+    //     var path = "export/model";
+    //     if (model != null)
+    //     {
+    //         FIFormat<Model> mdlFmt = fiFormat;
+    //         mdlFmt.SaveToFile(path, model);
+    //     }
+    //
+    //     if (texture != null)
+    //     {
+    //         FIFormat<Texture> texFmt = new FFTexturePNG();
+    //         texFmt.SaveToFile(path + ".png", texture);
+    //     }
+    // }
 
     protected override void OnLoad()
     {

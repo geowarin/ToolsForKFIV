@@ -3,6 +3,7 @@
 using System.Numerics;
 using FormatKFIV.Asset;
 using FormatKFIV.Utility;
+using ResourceKFIV.Asset;
 using SharpGLTF.Geometry;
 using SharpGLTF.Geometry.VertexTypes;
 using SharpGLTF.Materials;
@@ -13,19 +14,19 @@ namespace GltfKFIV.Gltf;
 
 public class GltfExporter
 {
-    private readonly Scene _sceneData;
+    private readonly SceneAsset _sceneAsset;
 
-    public GltfExporter(Scene sceneData)
+    public GltfExporter(SceneAsset sceneAsset)
     {
-        _sceneData = sceneData;
+        _sceneAsset = sceneAsset;
     }
 
-    public void Export(string fileName)
+    public void Export(string exportDir)
     {
-        var scene = _sceneData;
-
+        var scene = _sceneAsset.Scene;
         var texturesByGuid = GenerateTextures(scene);
 
+        var fileName = Path.GetFileName(_sceneAsset.RelativePath);
         var gltf = new SceneBuilder(fileName);
 
         var numChunk = 0;
@@ -77,7 +78,7 @@ public class GltfExporter
         var gltfModel = gltf.ToGltf2();
 
         Directory.CreateDirectory("export");
-        gltfModel.SaveGLB($"export/{fileName}.glb");
+        gltfModel.SaveGLB(Path.Combine(exportDir, fileName));
     }
 
     private static SceneBuilder MakeScene(string sceneName, AffineTransform transform, Model model,

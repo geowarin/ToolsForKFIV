@@ -13,6 +13,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\FormatKFIV\FormatKFIV.csproj" />
+      <ProjectReference Include="..\ResourceKFIV\ResourceKFIV.csproj" />
     </ItemGroup>
 
 </Project>

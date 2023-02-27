@@ -103,8 +103,12 @@ public class GltfExporter
         var meshNum = 0;
         foreach (var mesh in model.Meshes)
         {
-            var meshBuilder = MakeMesh($"{sceneName}_Mesh-{meshNum++}", model, mesh, texturesByGuid);
-            sceneBuilder.AddRigidMesh(meshBuilder, transform);
+            var material = GetMaterial(model, mesh, texturesByGuid);
+            if (material != null)
+            {
+                var meshBuilder = MakeMesh($"{sceneName}_Mesh-{meshNum++}", model, mesh, material);
+                sceneBuilder.AddRigidMesh(meshBuilder, transform);
+            }
         }
 
         return sceneBuilder;
@@ -132,25 +136,8 @@ public class GltfExporter
     }
 
     private static MeshBuilder<VertexPositionNormal, VertexColor1Texture1> MakeMesh(string name, Model model,
-        Model.Mesh mesh, IReadOnlyDictionary<uint, MaterialBuilder> materials)
+        Model.Mesh mesh, MaterialBuilder material)
     {
-        var material = new MaterialBuilder();
-        if (mesh.textureSlot != -1)
-        {
-            var textureSlot = mesh.textureSlot;
-            var textureUid = model.TextureSlots[textureSlot].slotKey;
-
-            //Ensure only valid texture slots are rendered.
-            if (model.TextureSlots[mesh.textureSlot].slotKey != 0x00000000 && materials.ContainsKey(textureUid))
-            {
-                material = materials[textureUid];
-            }
-            else
-            {
-                Console.Out.WriteLine($"${name} has no texture");
-            }
-        }
-
         var meshBuilder = new MeshBuilder<VertexPositionNormal, VertexColor1Texture1>(name);
         foreach (var meshPrimitive in mesh.primitives)
         {
@@ -197,5 +184,22 @@ public class GltfExporter
         }
 
         return meshBuilder;
+    }
+
+    private static MaterialBuilder? GetMaterial(Model model, Model.Mesh mesh, IReadOnlyDictionary<uint, MaterialBuilder> materials)
+    {
+        if (mesh.textureSlot != -1)
+        {
+            var textureSlot = mesh.textureSlot;
+            var textureUid = model.TextureSlots[textureSlot].slotKey;
+
+            //Ensure only valid texture slots are rendered.
+            if (model.TextureSlots[mesh.textureSlot].slotKey != 0x00000000 && materials.ContainsKey(textureUid))
+            {
+                return materials[textureUid];
+            }
+        }
+
+        return null;
     }
 }

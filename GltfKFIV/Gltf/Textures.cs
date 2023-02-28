@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using FormatKFIV.Asset;
 using SharpGLTF.Materials;
 using SixLabors.ImageSharp;
@@ -7,6 +8,8 @@ namespace GltfKFIV.Gltf;
 
 internal static class Textures
 {
+     private static readonly MD5 HasherMD5 = MD5.Create();
+    
     private static byte[]? PngFromRgba(Texture.ImageBuffer image, byte[] data)
     {
         var width = (int)image.Width;
@@ -21,6 +24,21 @@ internal static class Textures
         var memoryStream = new MemoryStream();
         img.SaveAsPng(memoryStream);
         return memoryStream.GetBuffer();
+    }    
+    
+    private static bool WriteRgba(Texture.ImageBuffer image, byte[] data, string path)
+    {
+        var width = (int)image.Width;
+        var height = (int)image.Height;
+        
+        using var img = Image.LoadPixelData<Bgra32>(data, width, height);
+        if (AllWhite(img, width, height))
+        {
+            return false;
+        }
+
+        img.SaveAsPng(path);
+        return true;
     }
 
     private static bool AllWhite(Image<Bgra32> img, int width, int height)
@@ -41,7 +59,7 @@ internal static class Textures
         return true;
     }
 
-    public static Dictionary<uint, MaterialBuilder> GenerateTextures(Scene scene)
+    public static Dictionary<uint, MaterialBuilder> GenerateTextures(Scene scene, string exportPath)
     {
         var texturesByGuid = new Dictionary<uint, MaterialBuilder>();
         foreach (var tex in scene.texData)
@@ -52,14 +70,17 @@ internal static class Textures
                 if (subImage != null)
                 {
                     var rgba = tex.GetSubimageAsRGBA(i);
-                    var memoryPng = PngFromRgba(subImage.Value, rgba);
+                    // var memoryPng = PngFromRgba(subImage.Value, rgba);
+                    
+                    var path = Path.Combine(exportPath, Md5(rgba));
+                    var validTexture = WriteRgba(subImage.Value, rgba, path);
 
-                    if (memoryPng != null)
+                    if (validTexture)
                     {
                         var material = new MaterialBuilder()
                             .WithDoubleSide(true)
                             .WithAlpha(AlphaMode.MASK)
-                            .WithBaseColor(memoryPng);
+                            .WithBaseColor(path);
 
                         texturesByGuid[subImage.Value.UID] = material;
                     }
@@ -68,5 +89,11 @@ internal static class Textures
         }
 
         return texturesByGuid;
+    }
+
+    private static string Md5(byte[] rgba)
+    {
+        var hashArr = HasherMD5.ComputeHash(rgba);
+        return Convert.ToHexString(hashArr);
     }
 }

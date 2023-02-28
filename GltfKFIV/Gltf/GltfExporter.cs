@@ -22,9 +22,13 @@ public class GltfExporter
     public void Export(string exportDir)
     {
         var scene = _sceneAsset.Scene;
-        var texturesByGuid = Textures.GenerateTextures(scene);
 
         var fileName = Path.GetFileName(_sceneAsset.RelativePath);
+        var texturesPath = Path.Combine(exportDir, "textures");
+        Directory.CreateDirectory(exportDir);
+        Directory.CreateDirectory(texturesPath);
+        
+        var texturesByGuid = Textures.GenerateTextures(scene, texturesPath);
         var gltf = new SceneBuilder(fileName);
 
         var numChunk = 0;
@@ -91,7 +95,6 @@ public class GltfExporter
         // gltf.ApplyBasisTransform(Matrix4x4.CreateScale(0.01f));
         var gltfModel = gltf.ToGltf2();
 
-        Directory.CreateDirectory("export");
         gltfModel.SaveGLB(Path.Combine(exportDir, fileName));
     }
 

@@ -58,6 +58,7 @@ internal static class Textures
                     {
                         var material = new MaterialBuilder()
                             .WithDoubleSide(true)
+                            .WithAlpha(AlphaMode.MASK)
                             .WithBaseColor(memoryPng);
 
                         texturesByGuid[subImage.Value.UID] = material;

@@ -88,7 +88,7 @@ public class GltfExporter
             gltf.AddScene(sceneBuilder, Matrix4x4.Identity);
         }
 
-        gltf.ApplyBasisTransform(Matrix4x4.CreateScale(0.01f));
+        // gltf.ApplyBasisTransform(Matrix4x4.CreateScale(0.01f));
         var gltfModel = gltf.ToGltf2();
 
         Directory.CreateDirectory("export");
